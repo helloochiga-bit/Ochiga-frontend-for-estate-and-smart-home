@@ -4,14 +4,16 @@ import { useState, useEffect } from "react";
 import { FiMenu, FiX, FiSearch, FiChevronDown, FiChevronUp, FiLogOut } from "react-icons/fi";
 import { MdOutlinePerson, MdSettings } from "react-icons/md";
 import { useRouter } from "next/navigation";
-import useAuth from "@/hooks/useAuth"; // <-- added
+import useAuth from "@/hooks/useAuth"; 
+import SlideUpEstateSettings from "./SlideUpEstateSettings"; // <-- new import
 
 export default function EstateHamburgerMenu() {
   const router = useRouter();
-  const { user } = useAuth(); // <-- added
+  const { user } = useAuth(); 
   const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showSettings, setShowSettings] = useState(false); // <-- new state
 
   useEffect(() => {
     if (open) document.body.classList.add("sidebar-open");
@@ -24,6 +26,7 @@ export default function EstateHamburgerMenu() {
         setOpen(false);
         setProfileOpen(false);
         setShowLogoutConfirm(false);
+        setShowSettings(false);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -36,7 +39,6 @@ export default function EstateHamburgerMenu() {
     router.push("/auth");
   };
 
-  // auto initials
   const initials = user?.username
     ? user.username.slice(0, 1).toUpperCase()
     : "E";
@@ -119,7 +121,7 @@ export default function EstateHamburgerMenu() {
               </button>
 
               <button
-                onClick={() => router.push("/estate-dashboard/settings")}
+                onClick={() => setShowSettings(true)} // <-- open SlideUpEstateSettings
                 className="w-full flex items-center gap-3 px-4 py-3 text-white/90 hover:bg-gray-800 transition"
               >
                 <MdSettings size={18} /> Settings
@@ -136,6 +138,7 @@ export default function EstateHamburgerMenu() {
         </div>
       </aside>
 
+      {/* BACKDROP */}
       {open && (
         <div
           className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30"
@@ -146,6 +149,7 @@ export default function EstateHamburgerMenu() {
         />
       )}
 
+      {/* LOGOUT MODAL */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center px-6">
           <div className="bg-gray-900 px-6 py-6 rounded-2xl w-full max-w-sm border border-gray-700">
@@ -171,6 +175,12 @@ export default function EstateHamburgerMenu() {
           </div>
         </div>
       )}
+
+      {/* SLIDE UP ESTATE SETTINGS */}
+      <SlideUpEstateSettings
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+      />
     </>
   );
 }
