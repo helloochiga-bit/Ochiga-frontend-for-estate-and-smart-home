@@ -5,7 +5,7 @@ import ChatFooter from "./components/ChatFooter";
 import DynamicSuggestionCard from "./components/DynamicSuggestionCard";
 import HamburgerMenu from "./components/HamburgerMenu";
 import LayoutWrapper from "./layout/LayoutWrapper";
-import ResidentTour from "./components/ResidentTour";
+import ResidentTour from "./components/Onboarding/ResidentTour";
 
 import useSpeechRecognition from "./hooks/useSpeechRecognition";
 
