@@ -1,126 +1,149 @@
-// ochiga-frontend/src/app/estate-dashboard/components/Onboarding/EstateTour.tsx
+// ochiga-frontend/src/app/estate-dashboard/components/EstateTour.tsx
 "use client";
 
-import { useEffect, useState } from "react";
-import clsx from "clsx";
+import { useState } from "react";
 
-const tourSteps = [
+interface EstateStep {
+  title: string;
+  description: string;
+  graphic: "homeCreation" | "devices" | "wallet" | "community" | "security" | "visitors";
+}
+
+const estateTourSteps: EstateStep[] = [
   {
     title: "Create First Home",
-    description: "Set up your first home, assign users, scan QR codes, and start the estate journey.",
-    spotlight: "estateHomePanel",
-    graphic: "home",
+    description: "Start by adding your first home and manage its residents.",
+    graphic: "homeCreation",
   },
   {
     title: "Estate Devices",
-    description: "Add estate-wide devices: cameras, gates, automation. Your estate is now smart!",
-    spotlight: "estateDevicePanel",
-    graphic: "device",
+    description: "Connect estate-wide devices and monitor their status.",
+    graphic: "devices",
   },
   {
     title: "Wallet & Utilities",
-    description: "Manage estate funds, billing, invoices, and pay for utilities seamlessly.",
-    spotlight: "estateAccountingPanel",
+    description: "Manage estate finances, fund wallets, and pay utilities.",
     graphic: "wallet",
   },
   {
     title: "Community",
-    description: "Stay connected with residents: announcements, events, notifications.",
-    spotlight: "estateCommunityPanel",
+    description: "Engage with residents and manage community interactions.",
     graphic: "community",
   },
   {
     title: "Security & Access",
-    description: "Monitor CCTV, track access logs, and keep your estate secure.",
-    spotlight: "estateCCTVPanel",
-    graphic: "cctv",
+    description: "Monitor CCTV and manage digital access keys for residents.",
+    graphic: "security",
   },
   {
     title: "Visitors",
-    description: "Manage visitors, approvals, and estate-wide entry seamlessly.",
-    spotlight: "estateCommunityPanel", // Optional: or add separate visitor panel
+    description: "Easily manage visitor access across your estate.",
     graphic: "visitors",
   },
 ];
 
 export default function EstateTour() {
   const [currentStep, setCurrentStep] = useState(0);
-  const step = tourSteps[currentStep];
 
-  const nextStep = () => setCurrentStep(Math.min(currentStep + 1, tourSteps.length - 1));
-  const prevStep = () => setCurrentStep(Math.max(currentStep - 1, 0));
-  const skipTour = () => setCurrentStep(tourSteps.length);
+  const step = estateTourSteps[currentStep];
 
-  const [spotlightStyle, setSpotlightStyle] = useState<React.CSSProperties>({});
-  useEffect(() => {
-    const updateSpotlight = () => {
-      if (!step.spotlight) return setSpotlightStyle({ display: "none" });
-      const el = document.getElementById(step.spotlight);
-      if (!el) return setSpotlightStyle({ display: "none" });
-      const rect = el.getBoundingClientRect();
-      setSpotlightStyle({
-        display: "block",
-        position: "absolute",
-        left: rect.left - 8,
-        top: rect.top - 8,
-        width: rect.width + 16,
-        height: rect.height + 16,
-        border: "3px solid #B85C5C",
-        borderRadius: "12px",
-        boxShadow: "0 0 0 2000px rgba(0,0,0,0.7), 0 0 40px #B85C5C",
-        transition: "all 0.6s cubic-bezier(0.4,0,0.2,1)",
-        pointerEvents: "none",
-        zIndex: 50,
-        animation: "pulse 2s ease-in-out infinite",
-      });
-    };
-    updateSpotlight();
-    window.addEventListener("resize", updateSpotlight);
-    return () => window.removeEventListener("resize", updateSpotlight);
-  }, [currentStep, step.spotlight]);
+  const nextStep = () => {
+    if (currentStep < estateTourSteps.length - 1) setCurrentStep(currentStep + 1);
+  };
+  const prevStep = () => {
+    if (currentStep > 0) setCurrentStep(currentStep - 1);
+  };
+  const skipTour = () => setCurrentStep(estateTourSteps.length);
 
-  return currentStep < tourSteps.length ? (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end items-center pointer-events-none">
-      <div className="fixed" style={spotlightStyle}></div>
-      <div
-        className="pointer-events-auto bg-black rounded-2xl p-6 m-4 w-[95%] max-w-xl shadow-lg"
-        style={{ background: "#000", color: "#fff" }}
-      >
-        <div className="mb-4 h-28 flex items-center justify-center bg-opacity-20 rounded-lg">
-          <span>{step.graphic}</span>
-        </div>
-        <h3 className="text-lg font-bold mb-2">{step.title}</h3>
-        <p className="text-sm mb-4">{step.description}</p>
-        <div className="flex justify-between items-center">
-          <button
-            onClick={prevStep}
-            disabled={currentStep === 0}
-            className={clsx(
-              "px-4 py-2 rounded text-white",
-              currentStep === 0 ? "opacity-30 cursor-not-allowed" : "hover:opacity-80"
-            )}
-          >
-            ← Back
-          </button>
-          <div className="flex gap-2">
-            {tourSteps.map((_, idx) => (
+  const renderGraphic = (type: EstateStep["graphic"]) => {
+    switch (type) {
+      case "homeCreation":
+        return (
+          <svg width={120} height={120}>
+            <rect x="50" y="50" width="20" height="20" fill="#B85C5C" />
+            <text x="60" y="40" fill="#fff" textAnchor="middle" fontSize={16}>
+              +
+            </text>
+          </svg>
+        );
+      case "devices":
+        return (
+          <svg width={120} height={120}>
+            <circle cx="60" cy="60" r="10" fill="#B85C5C" />
+            <circle cx="40" cy="40" r="6" fill="#fff" />
+            <circle cx="80" cy="40" r="6" fill="#fff" />
+          </svg>
+        );
+      case "wallet":
+        return (
+          <svg width={120} height={120}>
+            <rect x="30" y="40" width="60" height="40" rx={6} fill="#B85C5C" />
+            <circle cx="60" cy="60" r="6" fill="#fff" />
+          </svg>
+        );
+      case "community":
+        return (
+          <svg width={120} height={120}>
+            <circle cx="40" cy="50" r="8" fill="#B85C5C" />
+            <circle cx="80" cy="50" r="8" fill="#fff" />
+            <circle cx="60" cy="80" r="8" fill="#B85C5C" />
+          </svg>
+        );
+      case "security":
+        return (
+          <svg width={120} height={120}>
+            <rect x="50" y="40" width="20" height="40" fill="#B85C5C" />
+            <circle cx="60" cy="60" r="4" fill="#fff" />
+          </svg>
+        );
+      case "visitors":
+        return (
+          <svg width={120} height={120}>
+            <circle cx="60" cy="40" r="12" fill="#B85C5C" />
+            <rect x="45" y="60" width="30" height="30" fill="#B85C5C" rx={6} />
+          </svg>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 flex flex-col justify-center items-center bg-black bg-opacity-90 z-50 p-4">
+      {step && (
+        <>
+          <div className="mb-6">{renderGraphic(step.graphic)}</div>
+          <h2 className="text-white text-xl font-bold mb-2">{step.title}</h2>
+          <p className="text-white text-sm text-opacity-80 mb-6">{step.description}</p>
+
+          <div className="flex gap-2 mb-4">
+            {estateTourSteps.map((_, i) => (
               <div
-                key={idx}
-                className={clsx("rounded-full h-2 transition-all", {
-                  "w-6 bg-[#B85C5C]": idx === currentStep,
-                  "w-2 bg-white/30": idx !== currentStep,
-                })}
-              ></div>
+                key={i}
+                className={`w-3 h-3 rounded-full ${
+                  i === currentStep ? "bg-[#B85C5C] w-6 rounded-md" : "bg-white/40"
+                }`}
+              />
             ))}
           </div>
-          <button
-            onClick={nextStep}
-            className="px-4 py-2 rounded bg-[#B85C5C] font-semibold text-black hover:opacity-80"
-          >
-            {currentStep === tourSteps.length - 1 ? "Get Started 🚀" : "Next →"}
-          </button>
-        </div>
-      </div>
+
+          <div className="flex gap-4">
+            <button
+              className="text-white text-sm opacity-70 hover:opacity-100"
+              onClick={prevStep}
+              disabled={currentStep === 0}
+            >
+              ← Back
+            </button>
+            <button className="bg-[#B85C5C] text-white px-4 py-2 rounded-md" onClick={nextStep}>
+              {currentStep === estateTourSteps.length - 1 ? "Get Started 🚀" : "Next →"}
+            </button>
+            <button className="text-white/70 hover:text-white text-sm" onClick={skipTour}>
+              Skip
+            </button>
+          </div>
+        </>
+      )}
     </div>
-  ) : null;
+  );
 }
