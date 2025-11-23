@@ -74,8 +74,11 @@ export default function EstateHamburgerMenu() {
         <div className="px-4 mt-2">
           <div className="flex items-center bg-gray-800/60 rounded-xl px-3 py-2">
             <FiSearch className="opacity-50 text-gray-300" size={18} />
-            <input type="text" placeholder="Search houses, estates or devices"
-              className="bg-transparent outline-none text-sm ml-3 w-full text-gray-100 placeholder-gray-400" />
+            <input
+              type="text"
+              placeholder="Search houses, estates or devices"
+              className="bg-transparent outline-none text-sm ml-3 w-full text-gray-100 placeholder-gray-400"
+            />
           </div>
         </div>
 
@@ -87,7 +90,7 @@ export default function EstateHamburgerMenu() {
           <button className="w-full text-left py-3 px-3 rounded-lg hover:bg-gray-800 transition">Residents & Access</button>
         </nav>
 
-        {/* USER SECTION (UPDATED ONLY) */}
+        {/* USER SECTION */}
         <div className="absolute bottom-0 left-0 w-full px-4 py-5 border-t border-white/6 bg-black/40">
           <div className="flex items-center justify-between">
             <button className="flex items-center gap-3">
@@ -115,7 +118,10 @@ export default function EstateHamburgerMenu() {
                 <MdOutlinePerson size={18} /> Profile
               </button>
 
-              <button className="w-full flex items-center gap-3 px-4 py-3 text-white/90 hover:bg-gray-800 transition">
+              <button
+                onClick={() => router.push("/estate-dashboard/settings")}
+                className="w-full flex items-center gap-3 px-4 py-3 text-white/90 hover:bg-gray-800 transition"
+              >
                 <MdSettings size={18} /> Settings
               </button>
 
