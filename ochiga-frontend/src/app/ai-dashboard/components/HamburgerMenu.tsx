@@ -5,6 +5,7 @@ import { FiMenu, FiX, FiChevronDown, FiChevronUp, FiLogOut } from "react-icons/f
 import { MdOutlinePerson, MdSettings } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import useAuth from "@/hooks/useAuth";
+import SlideUpSettings from "./SlideUpSettings"; // import the slide-up component
 
 export default function AIDashboardHamburgerMenu() {
   const router = useRouter();
@@ -12,6 +13,7 @@ export default function AIDashboardHamburgerMenu() {
   const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showSettings, setShowSettings] = useState(false); // new state for slide-up settings
 
   useEffect(() => {
     if (open) document.body.classList.add("sidebar-open");
@@ -24,6 +26,7 @@ export default function AIDashboardHamburgerMenu() {
         setOpen(false);
         setProfileOpen(false);
         setShowLogoutConfirm(false);
+        setShowSettings(false);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -109,7 +112,11 @@ export default function AIDashboardHamburgerMenu() {
               </button>
 
               <button
-                onClick={() => router.push("/ai-dashboard/settings")}
+                onClick={() => {
+                  setShowSettings(true);
+                  setOpen(false);
+                  setProfileOpen(false);
+                }}
                 className="w-full flex items-center gap-3 px-4 py-3 text-white/90 hover:bg-gray-800 transition"
               >
                 <MdSettings size={18} /> Settings
@@ -135,6 +142,12 @@ export default function AIDashboardHamburgerMenu() {
           }}
         />
       )}
+
+      {/* SLIDE-UP SETTINGS COMPONENT */}
+      <SlideUpSettings
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+      />
 
       {/* LOGOUT MODAL */}
       {showLogoutConfirm && (
