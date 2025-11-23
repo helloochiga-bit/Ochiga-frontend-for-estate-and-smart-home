@@ -1,8 +1,7 @@
-// ochiga-frontend/src/app/estate-dashboard/settings/page.tsx
 "use client";
 
 import { FaUserCircle, FaBell, FaPlug, FaShieldAlt, FaTools, FaSignOutAlt } from "react-icons/fa";
-import { SettingsSection, SettingsItem } from "../components/SettingsComponents";
+import { SettingsSection, SettingsItem } from "../../components/SettingsComponents";
 
 export default function ResidentSettingsPage() {
   const sections = [
