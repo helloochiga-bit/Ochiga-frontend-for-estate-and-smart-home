@@ -1,149 +1,147 @@
-// ochiga-frontend/src/app/estate-dashboard/components/EstateTour.tsx
+// ochiga-frontend/src/app/ai-dashboard/components/Onboarding/EstateTour.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-interface EstateStep {
-  title: string;
-  description: string;
-  graphic: "homeCreation" | "devices" | "wallet" | "community" | "security" | "visitors";
-}
-
-const estateTourSteps: EstateStep[] = [
+const tourSteps = [
   {
-    title: "Create First Home",
-    description: "Start by adding your first home and manage its residents.",
-    graphic: "homeCreation",
+    title: "Estate Overview",
+    description: "View all your estates, summaries, and statistics here.",
+    spotlight: "estateOverview",
+    graphic: "overview",
   },
   {
     title: "Estate Devices",
-    description: "Connect estate-wide devices and monitor their status.",
+    description: "Manage devices across all estate properties.",
+    spotlight: "estateDevicesPanel",
     graphic: "devices",
   },
   {
-    title: "Wallet & Utilities",
-    description: "Manage estate finances, fund wallets, and pay utilities.",
-    graphic: "wallet",
+    title: "Payments & Transactions",
+    description: "Check wallet, payment history, and transaction statuses.",
+    spotlight: "paymentsPanel",
+    graphic: "payments",
   },
   {
-    title: "Community",
-    description: "Engage with residents and manage community interactions.",
-    graphic: "community",
-  },
-  {
-    title: "Security & Access",
-    description: "Monitor CCTV and manage digital access keys for residents.",
-    graphic: "security",
-  },
-  {
-    title: "Visitors",
-    description: "Easily manage visitor access across your estate.",
-    graphic: "visitors",
+    title: "Estate Settings",
+    description: "Adjust estate preferences, notifications, and users here.",
+    spotlight: "estateSettingsPanel",
+    graphic: "settings",
   },
 ];
 
 export default function EstateTour() {
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(-1);
 
-  const step = estateTourSteps[currentStep];
+  useEffect(() => {
+    const tourDone = localStorage.getItem("estateTourDone");
+    if (!tourDone) setCurrentStep(0);
 
-  const nextStep = () => {
-    if (currentStep < estateTourSteps.length - 1) setCurrentStep(currentStep + 1);
+    const handleResize = () => updateSpotlight();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    updateSpotlight();
+  }, [currentStep]);
+
+  const nextStep = () =>
+    setCurrentStep((prev) => {
+      if (prev + 1 >= tourSteps.length) {
+        localStorage.setItem("estateTourDone", "true");
+        return -1;
+      }
+      return prev + 1;
+    });
+  const previousStep = () => setCurrentStep((prev) => Math.max(prev - 1, 0));
+  const skipTour = () => {
+    localStorage.setItem("estateTourDone", "true");
+    setCurrentStep(-1);
   };
-  const prevStep = () => {
-    if (currentStep > 0) setCurrentStep(currentStep - 1);
-  };
-  const skipTour = () => setCurrentStep(estateTourSteps.length);
 
-  const renderGraphic = (type: EstateStep["graphic"]) => {
-    switch (type) {
-      case "homeCreation":
-        return (
-          <svg width={120} height={120}>
-            <rect x="50" y="50" width="20" height="20" fill="#B85C5C" />
-            <text x="60" y="40" fill="#fff" textAnchor="middle" fontSize={16}>
-              +
-            </text>
-          </svg>
-        );
-      case "devices":
-        return (
-          <svg width={120} height={120}>
-            <circle cx="60" cy="60" r="10" fill="#B85C5C" />
-            <circle cx="40" cy="40" r="6" fill="#fff" />
-            <circle cx="80" cy="40" r="6" fill="#fff" />
-          </svg>
-        );
-      case "wallet":
-        return (
-          <svg width={120} height={120}>
-            <rect x="30" y="40" width="60" height="40" rx={6} fill="#B85C5C" />
-            <circle cx="60" cy="60" r="6" fill="#fff" />
-          </svg>
-        );
-      case "community":
-        return (
-          <svg width={120} height={120}>
-            <circle cx="40" cy="50" r="8" fill="#B85C5C" />
-            <circle cx="80" cy="50" r="8" fill="#fff" />
-            <circle cx="60" cy="80" r="8" fill="#B85C5C" />
-          </svg>
-        );
-      case "security":
-        return (
-          <svg width={120} height={120}>
-            <rect x="50" y="40" width="20" height="40" fill="#B85C5C" />
-            <circle cx="60" cy="60" r="4" fill="#fff" />
-          </svg>
-        );
-      case "visitors":
-        return (
-          <svg width={120} height={120}>
-            <circle cx="60" cy="40" r="12" fill="#B85C5C" />
-            <rect x="45" y="60" width="30" height="30" fill="#B85C5C" rx={6} />
-          </svg>
-        );
-      default:
-        return null;
+  const updateSpotlight = () => {
+    const step = tourSteps[currentStep];
+    const spotlight = document.getElementById("spotlight");
+    if (!spotlight || !step) return;
+
+    if (step.spotlight) {
+      const element = document.querySelector(`[data-tour-id="${step.spotlight}"]`) as HTMLElement;
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        spotlight.style.display = "block";
+        spotlight.style.left = `${rect.left - 10}px`;
+        spotlight.style.top = `${rect.top - 10}px`;
+        spotlight.style.width = `${rect.width + 20}px`;
+        spotlight.style.height = `${rect.height + 20}px`;
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    } else {
+      spotlight.style.display = "none";
     }
   };
 
+  if (currentStep === -1) return null;
+
   return (
-    <div className="fixed inset-0 flex flex-col justify-center items-center bg-black bg-opacity-90 z-50 p-4">
-      {step && (
-        <>
-          <div className="mb-6">{renderGraphic(step.graphic)}</div>
-          <h2 className="text-white text-xl font-bold mb-2">{step.title}</h2>
-          <p className="text-white text-sm text-opacity-80 mb-6">{step.description}</p>
+    <div className="relative z-50 pointer-events-none">
+      {/* Spotlight */}
+      <div
+        id="spotlight"
+        className="absolute border-2 border-maroon rounded-lg shadow-[0_0_0_2000px_rgba(0,0,0,0.7)] pointer-events-none transition-all duration-500 animate-pulse"
+      ></div>
 
-          <div className="flex gap-2 mb-4">
-            {estateTourSteps.map((_, i) => (
-              <div
-                key={i}
-                className={`w-3 h-3 rounded-full ${
-                  i === currentStep ? "bg-[#B85C5C] w-6 rounded-md" : "bg-white/40"
-                }`}
-              />
-            ))}
-          </div>
+      {/* Tour Modal */}
+      <div className="fixed bottom-6 left-6 right-6 bg-gray-900 rounded-2xl p-5 shadow-lg pointer-events-auto z-50">
+        {/* Graphic placeholder */}
+        <div className="tour-graphic w-full h-28 mb-4 bg-gray-700 rounded-lg flex items-center justify-center text-white/50">
+          {tourSteps[currentStep].graphic}
+        </div>
 
-          <div className="flex gap-4">
+        {/* Navigation dots */}
+        <div className="flex justify-center gap-2 mb-4">
+          {tourSteps.map((_, idx) => (
+            <div
+              key={idx}
+              className={`w-2 h-2 rounded-full bg-white/30 ${
+                idx === currentStep ? "w-6 rounded-md bg-maroon" : ""
+              }`}
+            ></div>
+          ))}
+        </div>
+
+        {/* Progress bar */}
+        <div className="h-1 bg-white/20 rounded mb-4">
+          <div
+            className="h-full bg-gradient-to-r from-maroon to-red-500 transition-all"
+            style={{ width: `${((currentStep + 1) / tourSteps.length) * 100}%` }}
+          ></div>
+        </div>
+
+        <h3 className="text-white font-bold text-lg mb-2">{tourSteps[currentStep].title}</h3>
+        <p className="text-white/80 text-sm mb-4">{tourSteps[currentStep].description}</p>
+
+        <div className="flex justify-between items-center flex-wrap gap-2">
+          <button className="text-white/70 text-xs" onClick={skipTour}>
+            Skip Tour
+          </button>
+          <div className="flex gap-2">
             <button
-              className="text-white text-sm opacity-70 hover:opacity-100"
-              onClick={prevStep}
+              className="text-xs text-white/70"
+              onClick={previousStep}
               disabled={currentStep === 0}
             >
               ← Back
             </button>
-            <button className="bg-[#B85C5C] text-white px-4 py-2 rounded-md" onClick={nextStep}>
-              {currentStep === estateTourSteps.length - 1 ? "Get Started 🚀" : "Next →"}
-            </button>
-            <button className="text-white/70 hover:text-white text-sm" onClick={skipTour}>
-              Skip
+            <button
+              className="text-xs bg-gradient-to-r from-maroon to-red-500 text-white rounded-lg px-4 py-2 font-semibold shadow"
+              onClick={nextStep}
+            >
+              {currentStep === tourSteps.length - 1 ? "Get Started! 🚀" : "Next →"}
             </button>
           </div>
-        </>
-      )}
+        </div>
+      </div>
     </div>
   );
 }
