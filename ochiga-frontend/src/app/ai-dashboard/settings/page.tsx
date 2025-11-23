@@ -41,7 +41,7 @@ export default function ResidentSettingsPage() {
   return (
     <div className="w-full min-h-screen bg-gray-900 flex flex-col">
       {/* Header with back arrow */}
-      <div className="flex items-center max-w-xl mx-auto px-6 pt-10 mb-6">
+      <div className="flex items-center w-full px-6 pt-10 pb-4">
         <button
           onClick={() => router.back()}
           className="p-2 rounded-full bg-gray-800/40 text-white hover:bg-gray-700 transition"
@@ -52,8 +52,8 @@ export default function ResidentSettingsPage() {
       </div>
 
       {/* Profile Header */}
-      <div className="max-w-xl mx-auto px-6 mb-6">
-        <div className="flex flex-col items-center text-center">
+      <div className="w-full px-6 mb-6">
+        <div className="flex flex-col items-center text-center w-full">
           <FaUserCircle className="text-gray-400 text-7xl mb-3" />
           <h2 className="text-lg font-semibold text-white">Oyi</h2>
           <p className="text-sm text-gray-400">@info.pavnigeria</p>
@@ -64,18 +64,20 @@ export default function ResidentSettingsPage() {
       </div>
 
       {/* Scrollable Sections */}
-      <div className="max-w-xl mx-auto px-6 flex-1 overflow-y-auto space-y-8 pb-28">
+      <div className="w-full px-0 flex-1 overflow-y-auto space-y-8 pb-28">
         {sections.map((section) => (
-          <SettingsSection key={section.title} title={section.title}>
-            {section.items.map((item) => (
-              <SettingsItem key={item.title} {...item} className="w-full" />
-            ))}
-          </SettingsSection>
+          <div key={section.title} className="w-full px-6">
+            <SettingsSection title={section.title}>
+              {section.items.map((item) => (
+                <SettingsItem key={item.title} {...item} className="w-full" />
+              ))}
+            </SettingsSection>
+          </div>
         ))}
       </div>
 
       {/* Sticky Logout */}
-      <div className="fixed bottom-4 left-0 w-full px-6 max-w-xl mx-auto">
+      <div className="fixed bottom-4 left-0 w-full px-6">
         <button className="w-full py-3 text-red-600 font-semibold bg-gray-800 rounded-xl border border-gray-700 shadow-sm flex items-center justify-center gap-2 hover:bg-red-700 transition">
           <FaSignOutAlt />
           Log Out
