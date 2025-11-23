@@ -27,6 +27,9 @@ import {
   AiPanel,
   AssistantPanel,
   DeviceDiscoveryPanel,
+  SmartMeterPanel,      // NEW
+  IRSensorPanel,        // NEW
+  SensorPanel           // NEW
 } from "./components/Panels";
 
 import { detectPanelType } from "./utils/panelDetection";
@@ -162,22 +165,41 @@ export default function AIDashboard() {
       let reply = "I didn’t quite get that. Can you say it again?";
       let panel: string | null = null;
 
+      // ==== DEVICE ACTIONS ====
       if (a.type === "device") {
-        if (a.action === "turn_on" && a.target === "light") {
-          reply = "Turning on the lights.";
-          panel = "lights";
-        } else if (a.action === "turn_on" && a.target === "ac") {
-          reply = "Switching on the AC.";
-          panel = "lights";
-        } else if (a.action === "open" && a.target === "door") {
-          reply = "Opening the door now.";
-          panel = null;
-        } else if (a.action === "turn_on" && a.target === "camera") {
-          reply = "Turning on your security cameras.";
-          panel = "cctv";
-        } else if (a.action === "discover" && a.target === "devices") {
-          reply = "Scanning for nearby devices…";
-          panel = "devices";
+        switch (a.target) {
+          case "light":
+            reply = a.action === "turn_on" ? "Turning on the lights." : "Turning off the lights.";
+            panel = "lights";
+            break;
+          case "ac":
+            reply = a.action === "turn_on" ? "Switching on the AC." : "Turning off the AC.";
+            panel = "lights";
+            break;
+          case "camera":
+            reply = "Turning on your security cameras.";
+            panel = "cctv";
+            break;
+          case "smart_meter":
+            reply = "Displaying your electricity meter readings.";
+            panel = "smart_meter";
+            break;
+          case "ir_sensor":
+            reply = "Accessing your IR-controlled devices.";
+            panel = "ir_sensor";
+            break;
+          case "sensors":
+            reply = "Displaying sensor data from your home.";
+            panel = "sensors";
+            break;
+          case "devices":
+            reply = "Scanning for nearby devices…";
+            panel = "devices";
+            break;
+          case "door":
+            reply = "Opening the door now.";
+            panel = null;
+            break;
         }
       }
 
@@ -205,7 +227,7 @@ export default function AIDashboard() {
 
         setActivePanel(panel);
 
-        // If discovering devices, fetch from backend
+        // Fetch devices if needed
         if (panel === "devices") {
           (async () => {
             const estateId = typeof window !== "undefined" ? localStorage.getItem("ochiga_estate") : undefined;
@@ -235,7 +257,6 @@ export default function AIDashboard() {
         };
 
         setMessages((prev) => [...prev, userMsg, assistantMsg]);
-
         setTimeout(() => {
           if (isAtBottom()) scrollToBottom();
           else setShowScrollDown(true);
@@ -257,6 +278,7 @@ export default function AIDashboard() {
     const actions: Array<{ type: string; action: string; target: string }> = [];
     const lower = messageText.toLowerCase();
 
+    // ==== COMMAND DETECTION ====
     if (lower.includes("light")) actions.push({ type: "device", action: "turn_on", target: "light" });
     if (lower.includes("ac")) actions.push({ type: "device", action: "turn_on", target: "ac" });
     if (lower.includes("door")) actions.push({ type: "device", action: "open", target: "door" });
@@ -265,6 +287,12 @@ export default function AIDashboard() {
     if (lower.includes("status")) actions.push({ type: "info", action: "query", target: "status" });
     if (lower.includes("shut down") || lower.includes("sleep"))
       actions.push({ type: "system", action: "shutdown", target: "assistant" });
+
+    // ==== NEW SMART HOME PANELS ====
+    if (lower.includes("meter")) actions.push({ type: "device", action: "view", target: "smart_meter" });
+    if (lower.includes("ir")) actions.push({ type: "device", action: "view", target: "ir_sensor" });
+    if (lower.includes("sensor") || lower.includes("motion") || lower.includes("air"))
+      actions.push({ type: "device", action: "view", target: "sensors" });
 
     if (
       lower.includes("connect device") ||
@@ -351,6 +379,9 @@ export default function AIDashboard() {
     "Check device status",
     "Lock all doors",
     "Connect new device",
+    "Load electricity meter",
+    "Check IR devices",
+    "View sensors"
   ];
 
   const renderPanel = (panel: string | null | undefined) => {
@@ -389,6 +420,12 @@ export default function AIDashboard() {
         return <AiPanel />;
       case "devices":
         return <DeviceDiscoveryPanel devices={discoveredDevices} />;
+      case "smart_meter":
+        return <SmartMeterPanel />;
+      case "ir_sensor":
+        return <IRSensorPanel />;
+      case "sensors":
+        return <SensorPanel />;
       default:
         return null;
     }
