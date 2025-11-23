@@ -11,6 +11,8 @@ import useSpeechRecognition from "./hooks/useSpeechRecognition";
 
 import {
   LightControl,
+  ACPanel,             // ✅ AC
+  TVPanel,             // ✅ TV
   WalletPanel,
   CCTVPanel,
   EstatePanel,
@@ -164,37 +166,48 @@ export default function AIDashboard() {
       let reply = "Hmm… I didn’t quite get that. Can you try rephrasing?";
       let panel: string | null = null;
 
-      // ==== DEVICE ACTIONS ====
       if (a.type === "device") {
         switch (a.target) {
           case "light":
             reply = a.action === "turn_on" ? "Turning on your lights." : "Turning off your lights.";
             panel = "lights";
             break;
+
           case "ac":
             reply = a.action === "turn_on" ? "Switching on the AC." : "Turning off the AC.";
-            panel = "lights";
+            panel = "ac_panel";
             break;
+
+          case "tv":
+            reply = a.action === "turn_on" ? "Turning on the TV." : "Turning off the TV.";
+            panel = "tv_panel";
+            break;
+
           case "camera":
             reply = "Accessing your CCTV cameras.";
             panel = "cctv";
             break;
+
           case "smart_meter":
             reply = "Here’s your electricity meter reading.";
             panel = "smart_meter";
             break;
+
           case "ir_sensor":
             reply = "Opening IR device control panel.";
             panel = "ir_sensor";
             break;
+
           case "sensors":
             reply = "Showing all sensor data in your home.";
             panel = "sensors";
             break;
+
           case "devices":
             reply = "Let’s scan for nearby devices…";
             panel = "devices";
             break;
+
           case "door":
             reply = "Opening the door now.";
             panel = null;
@@ -226,7 +239,6 @@ export default function AIDashboard() {
 
         setActivePanel(panel);
 
-        // Fetch devices if needed
         if (panel === "devices") {
           (async () => {
             const estateId = typeof window !== "undefined" ? localStorage.getItem("ochiga_estate") : undefined;
@@ -269,39 +281,36 @@ export default function AIDashboard() {
   async function handleSend(text?: string, spoken = false) {
     const messageText = (text ?? input).trim();
     if (!messageText) return;
-
     setInput("");
 
     const panel = detectPanelType(messageText);
-
     const actions: Array<{ type: string; action: string; target: string }> = [];
     const lower = messageText.toLowerCase();
 
-    // ==== SMART NATURAL COMMAND DETECTION ====
-    if (lower.includes("turn on") || lower.includes("light")) actions.push({ type: "device", action: "turn_on", target: "light" });
-    if (lower.includes("turn off") || lower.includes("lights off")) actions.push({ type: "device", action: "turn_off", target: "light" });
-    if (lower.includes("ac")) actions.push({ type: "device", action: "turn_on", target: "ac" });
-    if (lower.includes("door")) actions.push({ type: "device", action: "open", target: "door" });
+    // === DEVICE COMMANDS ===
+    if (lower.includes("turn on") && lower.includes("ac")) actions.push({ type: "device", action: "turn_on", target: "ac" });
+    if (lower.includes("turn off") && lower.includes("ac")) actions.push({ type: "device", action: "turn_off", target: "ac" });
+
+    if (lower.includes("turn on") && lower.includes("tv")) actions.push({ type: "device", action: "turn_on", target: "tv" });
+    if (lower.includes("turn off") && lower.includes("tv")) actions.push({ type: "device", action: "turn_off", target: "tv" });
+
+    if (lower.includes("light")) actions.push({ type: "device", action: "turn_on", target: "light" });
+    if (lower.includes("lights off")) actions.push({ type: "device", action: "turn_off", target: "light" });
+
     if (lower.includes("camera") || lower.includes("cctv")) actions.push({ type: "device", action: "turn_on", target: "camera" });
+    if (lower.includes("door")) actions.push({ type: "device", action: "open", target: "door" });
     if (lower.includes("visitor")) actions.push({ type: "schedule", action: "create", target: "visitor" });
     if (lower.includes("status")) actions.push({ type: "info", action: "query", target: "status" });
     if (lower.includes("shut down") || lower.includes("sleep") || lower.includes("assistant off"))
       actions.push({ type: "system", action: "shutdown", target: "assistant" });
 
-    // ==== NEW SMART HOME PANELS ====
+    // === SMART HOME PANELS ===
     if (lower.includes("meter") || lower.includes("electricity")) actions.push({ type: "device", action: "view", target: "smart_meter" });
     if (lower.includes("ir")) actions.push({ type: "device", action: "view", target: "ir_sensor" });
     if (lower.includes("sensor") || lower.includes("motion") || lower.includes("air")) actions.push({ type: "device", action: "view", target: "sensors" });
 
-    if (
-      lower.includes("connect device") ||
-      lower.includes("add device") ||
-      lower.includes("scan") ||
-      lower.includes("discover") ||
-      lower.includes("pair")
-    ) {
+    if (lower.includes("connect device") || lower.includes("add device") || lower.includes("scan") || lower.includes("discover") || lower.includes("pair"))
       actions.push({ type: "device", action: "discover", target: "devices" });
-    }
 
     if (actions.length) {
       handleAction(actions, messageText);
@@ -309,7 +318,6 @@ export default function AIDashboard() {
     }
 
     const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-
     const userMsg: ChatMessage = {
       id: createId(),
       role: "user",
@@ -318,7 +326,6 @@ export default function AIDashboard() {
       panelTag: null,
       time: now,
     };
-
     setMessages((prev) => [...prev, userMsg]);
 
     try {
@@ -373,6 +380,8 @@ export default function AIDashboard() {
 
   const suggestions = [
     "Turn on living room lights",
+    "Turn on AC",
+    "Turn on TV",
     "Fund my wallet",
     "View CCTV feed",
     "Check device status",
@@ -386,6 +395,8 @@ export default function AIDashboard() {
   const renderPanel = (panel: string | null | undefined) => {
     switch (panel) {
       case "lights": return <LightControl />;
+      case "ac_panel": return <ACPanel />;
+      case "tv_panel": return <TVPanel />;
       case "wallet": return <WalletPanel />;
       case "cctv": return <CCTVPanel />;
       case "estate": return <EstatePanel />;
