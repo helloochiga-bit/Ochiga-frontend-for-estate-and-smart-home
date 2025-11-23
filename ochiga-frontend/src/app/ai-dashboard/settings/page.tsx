@@ -1,16 +1,17 @@
-// ochiga-frontend/src/app/ai-dashboard/settings/page.tsx
+// ochiga-frontend/src/app/components/SettingsSlideUp.tsx
 "use client";
 
 import { useState } from "react";
 import { FaUserCircle, FaBell, FaPlug, FaShieldAlt, FaTools, FaSignOutAlt } from "react-icons/fa";
-import { FiArrowLeft } from "react-icons/fi"; // back arrow
-import { SettingsSection, SettingsItem } from "../../components/SettingsComponents";
-import { useRouter } from "next/navigation";
+import { FiArrowLeft } from "react-icons/fi";
+import { SettingsSection, SettingsItem } from "./SettingsComponents";
 
-export default function ResidentSettingsPage() {
-  const [open, setOpen] = useState(true); // slide-up modal control
-  const router = useRouter();
+type SlideUpProps = {
+  isOpen: boolean;
+  onClose: () => void;
+};
 
+export default function SettingsSlideUp({ isOpen, onClose }: SlideUpProps) {
   const sections = [
     {
       title: "Account",
@@ -40,23 +41,23 @@ export default function ResidentSettingsPage() {
     },
   ];
 
-  if (!open) return null; // hide page if closed
+  if (!isOpen) return null;
 
   return (
     <>
       {/* Background overlay */}
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-        onClick={() => setOpen(false)}
+        onClick={onClose}
       />
 
-      {/* Sliding modal */}
-      <div className="fixed inset-x-0 bottom-0 z-50 max-h-[95vh] h-[95vh] bg-gray-900 rounded-t-2xl shadow-xl transform transition-transform duration-300 ease-out animate-slide-up overflow-hidden flex flex-col">
+      {/* Slide-up modal */}
+      <div className="fixed inset-x-0 bottom-0 z-50 max-h-[90vh] h-[90vh] bg-gray-900 rounded-t-3xl shadow-xl transform transition-transform duration-300 ease-out animate-slide-up overflow-hidden flex flex-col">
         
-        {/* Header with Back Arrow */}
+        {/* Header with back arrow */}
         <div className="flex items-center px-6 py-4 border-b border-gray-700">
           <button
-            onClick={() => router.back()} // go back to previous page
+            onClick={onClose}
             className="text-gray-300 text-xl p-1 hover:text-white transition"
           >
             <FiArrowLeft />
@@ -74,7 +75,7 @@ export default function ResidentSettingsPage() {
           </div>
         </div>
 
-        {/* Scrollable Sections */}
+        {/* Scrollable sections */}
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
           {sections.map((section) => (
             <SettingsSection key={section.title} title={section.title}>
@@ -85,7 +86,7 @@ export default function ResidentSettingsPage() {
           ))}
         </div>
 
-        {/* Logout Button */}
+        {/* Logout button */}
         <div className="px-6 py-4 border-t border-gray-700">
           <button className="w-full py-3 text-red-600 font-semibold bg-gray-800 rounded-xl border border-gray-700 shadow-sm flex items-center justify-center gap-2 hover:bg-red-700 transition">
             <FaSignOutAlt />
