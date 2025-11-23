@@ -1,10 +1,9 @@
 // ochiga-frontend/src/app/components/SettingsSlideUp.tsx
 "use client";
 
-import { useState } from "react";
 import { FaUserCircle, FaBell, FaPlug, FaShieldAlt, FaTools, FaSignOutAlt } from "react-icons/fa";
 import { FiArrowLeft } from "react-icons/fi";
-import { SettingsSection, SettingsItem } from "./SettingsComponents";
+import { SettingsSection, SettingsItem } from "../../components/SettingsComponents";
 
 type SlideUpProps = {
   isOpen: boolean;
