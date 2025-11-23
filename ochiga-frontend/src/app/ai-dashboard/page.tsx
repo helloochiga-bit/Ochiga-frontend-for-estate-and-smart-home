@@ -27,9 +27,9 @@ import {
   AiPanel,
   AssistantPanel,
   DeviceDiscoveryPanel,
-  SmartMeterPanel,      // NEW
-  IRSensorPanel,        // NEW
-  SensorPanel           // NEW
+  SmartMeterPanel,
+  IRSensorPanel,
+  SensorPanel
 } from "./components/Panels";
 
 import { detectPanelType } from "./utils/panelDetection";
@@ -105,7 +105,6 @@ export default function AIDashboard() {
       if (!grouped.length) return prev;
 
       const filtered = prev.filter((m) => m.panelTag !== panelTag);
-
       const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
       const updatedGroup = grouped.map((m) => ({ ...m, time: now }));
 
@@ -162,14 +161,14 @@ export default function AIDashboard() {
     userMessage?: string
   ) => {
     actions.forEach((a) => {
-      let reply = "I didn’t quite get that. Can you say it again?";
+      let reply = "Hmm… I didn’t quite get that. Can you try rephrasing?";
       let panel: string | null = null;
 
       // ==== DEVICE ACTIONS ====
       if (a.type === "device") {
         switch (a.target) {
           case "light":
-            reply = a.action === "turn_on" ? "Turning on the lights." : "Turning off the lights.";
+            reply = a.action === "turn_on" ? "Turning on your lights." : "Turning off your lights.";
             panel = "lights";
             break;
           case "ac":
@@ -177,23 +176,23 @@ export default function AIDashboard() {
             panel = "lights";
             break;
           case "camera":
-            reply = "Turning on your security cameras.";
+            reply = "Accessing your CCTV cameras.";
             panel = "cctv";
             break;
           case "smart_meter":
-            reply = "Displaying your electricity meter readings.";
+            reply = "Here’s your electricity meter reading.";
             panel = "smart_meter";
             break;
           case "ir_sensor":
-            reply = "Accessing your IR-controlled devices.";
+            reply = "Opening IR device control panel.";
             panel = "ir_sensor";
             break;
           case "sensors":
-            reply = "Displaying sensor data from your home.";
+            reply = "Showing all sensor data in your home.";
             panel = "sensors";
             break;
           case "devices":
-            reply = "Scanning for nearby devices…";
+            reply = "Let’s scan for nearby devices…";
             panel = "devices";
             break;
           case "door":
@@ -204,17 +203,17 @@ export default function AIDashboard() {
       }
 
       if (a.type === "schedule" && a.target === "visitor") {
-        reply = "Sure. What time should I schedule your visitor?";
+        reply = "Got it. What time should your visitor arrive?";
         panel = "visitors";
       }
 
       if (a.type === "info" && a.target === "status") {
-        reply = "Your home is secure, power is stable, and the network is strong.";
+        reply = "Everything looks good — your home is secure, power stable, and network strong.";
         panel = null;
       }
 
       if (a.type === "system" && a.target === "assistant") {
-        reply = "Alright. Ochiga Assistant signing off.";
+        reply = "Okay, Ochiga Assistant signing off for now.";
         panel = null;
       }
 
@@ -278,21 +277,21 @@ export default function AIDashboard() {
     const actions: Array<{ type: string; action: string; target: string }> = [];
     const lower = messageText.toLowerCase();
 
-    // ==== COMMAND DETECTION ====
-    if (lower.includes("light")) actions.push({ type: "device", action: "turn_on", target: "light" });
+    // ==== SMART NATURAL COMMAND DETECTION ====
+    if (lower.includes("turn on") || lower.includes("light")) actions.push({ type: "device", action: "turn_on", target: "light" });
+    if (lower.includes("turn off") || lower.includes("lights off")) actions.push({ type: "device", action: "turn_off", target: "light" });
     if (lower.includes("ac")) actions.push({ type: "device", action: "turn_on", target: "ac" });
     if (lower.includes("door")) actions.push({ type: "device", action: "open", target: "door" });
-    if (lower.includes("camera")) actions.push({ type: "device", action: "turn_on", target: "camera" });
+    if (lower.includes("camera") || lower.includes("cctv")) actions.push({ type: "device", action: "turn_on", target: "camera" });
     if (lower.includes("visitor")) actions.push({ type: "schedule", action: "create", target: "visitor" });
     if (lower.includes("status")) actions.push({ type: "info", action: "query", target: "status" });
-    if (lower.includes("shut down") || lower.includes("sleep"))
+    if (lower.includes("shut down") || lower.includes("sleep") || lower.includes("assistant off"))
       actions.push({ type: "system", action: "shutdown", target: "assistant" });
 
     // ==== NEW SMART HOME PANELS ====
-    if (lower.includes("meter")) actions.push({ type: "device", action: "view", target: "smart_meter" });
+    if (lower.includes("meter") || lower.includes("electricity")) actions.push({ type: "device", action: "view", target: "smart_meter" });
     if (lower.includes("ir")) actions.push({ type: "device", action: "view", target: "ir_sensor" });
-    if (lower.includes("sensor") || lower.includes("motion") || lower.includes("air"))
-      actions.push({ type: "device", action: "view", target: "sensors" });
+    if (lower.includes("sensor") || lower.includes("motion") || lower.includes("air")) actions.push({ type: "device", action: "view", target: "sensors" });
 
     if (
       lower.includes("connect device") ||
@@ -324,7 +323,7 @@ export default function AIDashboard() {
 
     try {
       const aiResp = await aiService.chat(messageText);
-      const replyText = aiResp.reply || `Okay — I processed: "${messageText}".`;
+      const replyText = aiResp.reply || `Alright, I’ve processed: "${messageText}".`;
       const panelFromAI = aiResp.panel ?? panel ?? null;
 
       const replyMsg: ChatMessage = {
@@ -386,48 +385,27 @@ export default function AIDashboard() {
 
   const renderPanel = (panel: string | null | undefined) => {
     switch (panel) {
-      case "lights":
-        return <LightControl />;
-      case "wallet":
-        return <WalletPanel />;
-      case "cctv":
-        return <CCTVPanel />;
-      case "estate":
-        return <EstatePanel />;
-      case "home":
-        return <HomePanel />;
-      case "room":
-        return <RoomPanel />;
-      case "visitors":
-        return <VisitorsPanel />;
-      case "payments":
-        return <PaymentsPanel />;
-      case "utilities":
-        return <UtilitiesPanel />;
-      case "community":
-        return <CommunityPanel />;
-      case "notifications":
-        return <NotificationsPanel />;
-      case "health":
-        return <HealthPanel />;
-      case "message":
-        return <MessagePanel />;
-      case "iot":
-        return <IoTPanel />;
-      case "assistant":
-        return <AssistantPanel />;
-      case "ai":
-        return <AiPanel />;
-      case "devices":
-        return <DeviceDiscoveryPanel devices={discoveredDevices} />;
-      case "smart_meter":
-        return <SmartMeterPanel />;
-      case "ir_sensor":
-        return <IRSensorPanel />;
-      case "sensors":
-        return <SensorPanel />;
-      default:
-        return null;
+      case "lights": return <LightControl />;
+      case "wallet": return <WalletPanel />;
+      case "cctv": return <CCTVPanel />;
+      case "estate": return <EstatePanel />;
+      case "home": return <HomePanel />;
+      case "room": return <RoomPanel />;
+      case "visitors": return <VisitorsPanel />;
+      case "payments": return <PaymentsPanel />;
+      case "utilities": return <UtilitiesPanel />;
+      case "community": return <CommunityPanel />;
+      case "notifications": return <NotificationsPanel />;
+      case "health": return <HealthPanel />;
+      case "message": return <MessagePanel />;
+      case "iot": return <IoTPanel />;
+      case "assistant": return <AssistantPanel />;
+      case "ai": return <AiPanel />;
+      case "devices": return <DeviceDiscoveryPanel devices={discoveredDevices} />;
+      case "smart_meter": return <SmartMeterPanel />;
+      case "ir_sensor": return <IRSensorPanel />;
+      case "sensors": return <SensorPanel />;
+      default: return null;
     }
   };
 
@@ -437,14 +415,11 @@ export default function AIDashboard() {
 
   return (
     <LayoutWrapper menuOpen={menuOpen}>
-      {/* HAMBURGER */}
       <header className="absolute top-4 left-4 z-50">
         <HamburgerMenu onToggle={(o: boolean) => setMenuOpen(o)} />
       </header>
 
-      {/* FIXED PAGE */}
       <div className="fixed inset-0 flex flex-col w-full h-full">
-        {/* CHAT + PANELS */}
         <main
           className="flex-1 flex flex-col overflow-hidden"
           style={{
@@ -492,7 +467,6 @@ export default function AIDashboard() {
           </div>
         </main>
 
-        {/* DYNAMIC SUGGESTION CARD */}
         <div className="w-full px-4 z-40 pointer-events-none" data-tour-id="suggestionsCard">
           <div className="max-w-3xl mx-auto pointer-events-auto">
             <DynamicSuggestionCard
@@ -503,7 +477,6 @@ export default function AIDashboard() {
           </div>
         </div>
 
-        {/* CHAT FOOTER FULL WIDTH */}
         <div className="w-full px-4 py-2 bg-gray-900 border-t border-gray-700 flex justify-center items-center z-50">
           <ChatFooter
             input={input}
@@ -525,7 +498,6 @@ export default function AIDashboard() {
         </button>
       )}
 
-      {/* RESIDENT TOUR */}
       <ResidentTour />
     </LayoutWrapper>
   );
