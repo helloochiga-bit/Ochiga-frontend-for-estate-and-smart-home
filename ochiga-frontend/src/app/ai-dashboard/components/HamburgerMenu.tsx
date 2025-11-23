@@ -108,7 +108,10 @@ export default function AIDashboardHamburgerMenu() {
                 <MdOutlinePerson size={18} /> Profile
               </button>
 
-              <button className="w-full flex items-center gap-3 px-4 py-3 text-white/90 hover:bg-gray-800 transition">
+              <button
+                onClick={() => router.push("/ai-dashboard/settings")}
+                className="w-full flex items-center gap-3 px-4 py-3 text-white/90 hover:bg-gray-800 transition"
+              >
                 <MdSettings size={18} /> Settings
               </button>
 
