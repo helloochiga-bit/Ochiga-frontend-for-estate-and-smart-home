@@ -2,11 +2,14 @@
 "use client";
 
 import { useState } from "react";
-import { FaUserCircle, FaBell, FaPlug, FaShieldAlt, FaTools, FaSignOutAlt, FaTimes } from "react-icons/fa";
+import { FaUserCircle, FaBell, FaPlug, FaShieldAlt, FaTools, FaSignOutAlt } from "react-icons/fa";
+import { FiArrowLeft } from "react-icons/fi"; // back arrow
 import { SettingsSection, SettingsItem } from "../../components/SettingsComponents";
+import { useRouter } from "next/navigation";
 
 export default function ResidentSettingsPage() {
-  const [open, setOpen] = useState(true); // controls slide-up modal
+  const [open, setOpen] = useState(true); // slide-up modal control
+  const router = useRouter();
 
   const sections = [
     {
@@ -37,7 +40,7 @@ export default function ResidentSettingsPage() {
     },
   ];
 
-  if (!open) return null; // hide page when closed
+  if (!open) return null; // hide page if closed
 
   return (
     <>
@@ -50,12 +53,15 @@ export default function ResidentSettingsPage() {
       {/* Sliding modal */}
       <div className="fixed inset-x-0 bottom-0 z-50 max-h-[95vh] h-[95vh] bg-gray-900 rounded-t-2xl shadow-xl transform transition-transform duration-300 ease-out animate-slide-up overflow-hidden flex flex-col">
         
-        {/* Header with X button */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
-          <h2 className="text-lg font-semibold text-white">Settings</h2>
-          <button onClick={() => setOpen(false)} className="text-white text-xl p-1 hover:text-gray-300 transition">
-            <FaTimes />
+        {/* Header with Back Arrow */}
+        <div className="flex items-center px-6 py-4 border-b border-gray-700">
+          <button
+            onClick={() => router.back()} // go back to previous page
+            className="text-gray-300 text-xl p-1 hover:text-white transition"
+          >
+            <FiArrowLeft />
           </button>
+          <h2 className="text-lg font-semibold text-white ml-4">Settings</h2>
         </div>
 
         {/* Profile Header */}
