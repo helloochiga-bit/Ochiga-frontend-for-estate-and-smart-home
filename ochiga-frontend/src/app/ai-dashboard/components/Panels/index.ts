@@ -15,3 +15,8 @@ export { default as IoTPanel } from "./IoTPanel";
 export { default as AiPanel } from "./AiPanel";
 export { default as AssistantPanel } from "./AssistantPanel";
 export { default as DeviceDiscoveryPanel } from "./DeviceDiscoveryPanel"; // ✅ added
+
+// 🔹 New Smart Home Panels (if created)
+export { default as IRSensorPanel } from "./IRSensorPanel";
+export { default as SmartMeterPanel } from "./SmartMeterPanel";
+export { default as SensorsPanel } from "./SensorsPanel";
