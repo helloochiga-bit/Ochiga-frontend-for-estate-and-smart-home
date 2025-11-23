@@ -1,26 +1,35 @@
+// ochiga-frontend/src/app/estate-dashboard/settings/page.tsx
 "use client";
 
 import { FaUserCircle, FaBell, FaPlug, FaShieldAlt, FaTools, FaSignOutAlt } from "react-icons/fa";
-import { SettingsSection, SettingsItem } from "@/components/SettingsComponents";
+import { SettingsSection, SettingsItem } from "../components/SettingsComponents";
 
-export default function EstateSettingsPage() {
+export default function ResidentSettingsPage() {
   const sections = [
     {
-      title: "Estate Management",
+      title: "Account",
       items: [
-        { title: "Estate Name", subtitle: "Oyi Estate" },
-        { title: "Estate Plan", value: "Premium" },
-        { title: "Upgrade Plan" },
-        { title: "Manage Staff", icon: FaUserCircle },
+        { title: "Email", subtitle: "info.pavnigeria@gmail.com" },
+        { title: "Subscription", value: "Free Plan" },
+        { title: "Upgrade to Oyi Pro" },
+        { title: "Personalization", icon: FaUserCircle },
       ],
     },
     {
       title: "System",
       items: [
         { title: "Notifications", icon: FaBell },
-        { title: "Connected Apps", icon: FaPlug },
+        { title: "Apps & Connectors", icon: FaPlug },
         { title: "Security & Privacy", icon: FaShieldAlt },
         { title: "Developer Tools", icon: FaTools },
+      ],
+    },
+    {
+      title: "About",
+      items: [
+        { title: "Terms of Use" },
+        { title: "Privacy Policy" },
+        { title: "Help Center" },
       ],
     },
   ];
@@ -31,10 +40,10 @@ export default function EstateSettingsPage() {
       <div className="max-w-xl mx-auto px-6 pt-10 mb-6">
         <div className="flex flex-col items-center text-center">
           <FaUserCircle className="text-gray-500 text-7xl mb-3" />
-          <h2 className="text-lg font-semibold text-gray-900">Oyi Estate</h2>
-          <p className="text-sm text-gray-500">@estate.oyi</p>
+          <h2 className="text-lg font-semibold text-gray-900">Oyi</h2>
+          <p className="text-sm text-gray-500">@info.pavnigeria</p>
           <div className="mt-4 px-4 py-1 rounded-full border border-gray-300 text-xs text-gray-500 bg-white">
-            Premium Plan
+            Free Plan
           </div>
         </div>
       </div>
