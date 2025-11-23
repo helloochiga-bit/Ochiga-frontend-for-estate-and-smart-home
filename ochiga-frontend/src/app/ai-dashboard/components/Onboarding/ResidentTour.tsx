@@ -4,26 +4,26 @@ import { useEffect, useState } from "react";
 const tourSteps = [
   {
     title: "Navigation Menu",
-    description: "Use this menu to open chats, panels, and settings.",
+    description: "Use this menu to open chats, panels, and settings quickly.",
     spotlight: "sidebar",
     graphic: "navigation",
   },
   {
     title: "Chat Area",
-    description: "Here’s where your AI conversation happens.",
+    description: "This is where your AI conversation happens in real-time.",
     spotlight: "chatArea",
     graphic: "chat",
   },
   {
     title: "AI Suggestions",
-    description: "Quickly send commands from suggested prompts.",
+    description: "Quickly send commands using suggested prompts.",
     spotlight: "suggestionsCard",
     graphic: "suggestions",
   },
   {
     title: "Devices & Panels",
-    description: "View and manage connected devices and panels here.",
-    spotlight: "devices",
+    description: "View and manage connected devices and other panels here.",
+    spotlight: "devicesPanel",
     graphic: "devices",
   },
 ];
@@ -48,7 +48,7 @@ export default function ResidentTour() {
     if (!spotlight || !step) return;
 
     if (step.spotlight) {
-      const element = document.getElementById(step.spotlight);
+      const element = document.querySelector(`[data-tour-id="${step.spotlight}"]`) as HTMLElement;
       if (element) {
         const rect = element.getBoundingClientRect();
         spotlight.style.display = "block";
@@ -57,40 +57,42 @@ export default function ResidentTour() {
         spotlight.style.width = `${rect.width + 20}px`;
         spotlight.style.height = `${rect.height + 20}px`;
       }
-    } else spotlight.style.display = "none";
+    } else {
+      spotlight.style.display = "none";
+    }
   };
 
   if (currentStep === -1) return null;
 
   return (
-    <div className="app-container relative min-h-screen overflow-hidden pointer-events-none">
+    <div className="relative z-50 pointer-events-none">
       {/* Spotlight */}
       <div
         id="spotlight"
-        className="spotlight absolute border-2 border-yellow-400 rounded-lg shadow-[0_0_0_2000px_rgba(0,0,0,0.7)] pointer-events-none transition-all duration-500 z-40 animate-pulse"
+        className="absolute border-2 border-maroon rounded-lg shadow-[0_0_0_2000px_rgba(0,0,0,0.7)] pointer-events-none transition-all duration-500 animate-pulse"
       ></div>
 
       {/* Tour Modal */}
-      <div className="tour-modal fixed bottom-4 left-4 right-4 bg-gradient-to-br from-blue-900/95 to-blue-500/95 rounded-2xl p-5 shadow-lg z-50 pointer-events-auto">
-        <div
-          id="tourGraphic"
-          className="tour-graphic w-full h-28 mb-4 bg-black/20 rounded-lg flex items-center justify-center"
-        ></div>
+      <div className="fixed bottom-6 left-6 right-6 bg-gray-900 rounded-2xl p-5 shadow-lg pointer-events-auto z-50">
+        {/* Graphic placeholder */}
+        <div className="tour-graphic w-full h-28 mb-4 bg-gray-700 rounded-lg flex items-center justify-center text-white/50">
+          {tourSteps[currentStep].graphic}
+        </div>
 
-        <div className="nav-dots flex justify-center gap-2 mb-4">
+        {/* Navigation dots */}
+        <div className="flex justify-center gap-2 mb-4">
           {tourSteps.map((_, idx) => (
             <div
               key={idx}
-              className={`dot ${idx === currentStep ? "active" : ""} w-2 h-2 rounded-full bg-white/30 ${
-                idx === currentStep ? "w-6 rounded-md bg-yellow-400" : ""
-              }`}
+              className={`w-2 h-2 rounded-full bg-white/30 ${idx === currentStep ? "w-6 rounded-md bg-maroon" : ""}`}
             ></div>
           ))}
         </div>
 
-        <div className="progress-bar h-1 bg-white/20 rounded mb-4">
+        {/* Progress bar */}
+        <div className="h-1 bg-white/20 rounded mb-4">
           <div
-            className="progress-fill h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all"
+            className="h-full bg-gradient-to-r from-maroon to-red-500 transition-all"
             style={{ width: `${((currentStep + 1) / tourSteps.length) * 100}%` }}
           ></div>
         </div>
@@ -99,19 +101,19 @@ export default function ResidentTour() {
         <p className="text-white/80 text-sm mb-4">{tourSteps[currentStep].description}</p>
 
         <div className="flex justify-between items-center flex-wrap gap-2">
-          <button className="skip-button text-white/70 text-xs" onClick={skipTour}>
+          <button className="text-white/70 text-xs" onClick={skipTour}>
             Skip Tour
           </button>
           <div className="flex gap-2">
             <button
-              className="skip-button text-xs"
+              className="text-xs text-white/70"
               onClick={previousStep}
               disabled={currentStep === 0}
             >
               ← Back
             </button>
             <button
-              className="cta-button text-xs bg-gradient-to-r from-yellow-400 to-orange-500 text-blue-900 rounded-lg px-4 py-2 font-semibold shadow"
+              className="text-xs bg-gradient-to-r from-maroon to-red-500 text-white rounded-lg px-4 py-2 font-semibold shadow"
               onClick={nextStep}
             >
               {currentStep === tourSteps.length - 1 ? "Get Started! 🚀" : "Next →"}
