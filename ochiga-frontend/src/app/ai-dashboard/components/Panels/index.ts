@@ -19,4 +19,4 @@ export { default as DeviceDiscoveryPanel } from "./DeviceDiscoveryPanel"; // ✅
 // 🔹 New Smart Home Panels (if created)
 export { default as IRSensorPanel } from "./IRSensorPanel";
 export { default as SmartMeterPanel } from "./SmartMeterPanel";
-export { default as SensorsPanel } from "./SensorsPanel";
+export { default as SensorPanel } from "./SensorPanel"; // match the actual filename
