@@ -5,6 +5,7 @@ import ChatFooter from "./components/ChatFooter";
 import DynamicSuggestionCard from "./components/DynamicSuggestionCard";
 import HamburgerMenu from "./components/HamburgerMenu";
 import LayoutWrapper from "./layout/LayoutWrapper";
+import ResidentTour from "./components/ResidentTour";
 
 import useSpeechRecognition from "./hooks/useSpeechRecognition";
 
@@ -291,10 +292,8 @@ export default function AIDashboard() {
       time: now,
     };
 
-    // Append the user message immediately
     setMessages((prev) => [...prev, userMsg]);
 
-    // Call backend AI using aiService
     try {
       const aiResp = await aiService.chat(messageText);
       const replyText = aiResp.reply || `Okay — I processed: "${messageText}".`;
@@ -316,7 +315,6 @@ export default function AIDashboard() {
 
         setActivePanel(panelFromAI);
 
-        // if AI requests devices panel, fetch devices
         if (panelFromAI === "devices") {
           const estateId = typeof window !== "undefined" ? localStorage.getItem("ochiga_estate") : undefined;
           const devices = await deviceService.getDevices(estateId ?? undefined);
@@ -326,7 +324,6 @@ export default function AIDashboard() {
         setMessages((prev) => [...prev, replyMsg]);
       }
 
-      // speak it if we are using audio
       if (spoken) speak(replyText);
     } catch (err) {
       console.error("AI error", err);
@@ -423,6 +420,7 @@ export default function AIDashboard() {
             ref={chatRef}
             onScroll={handleScroll}
             className="flex-1 overflow-y-auto px-4 md:px-10 pt-20 pb-32 space-y-4 scroll-smooth"
+            data-tour-id="chatArea"
           >
             <div className="max-w-3xl mx-auto flex flex-col gap-4">
               {messages.map((msg, i) => {
@@ -433,7 +431,7 @@ export default function AIDashboard() {
                     ref={(el) => (messageRefs.current[i] = el)}
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
-                    <div className="flex flex-col max-w-[80%]">
+                    <div className="flex flex-col max-w-[80%]" data-tour-id={msg.panel === "devices" ? "devicesPanel" : undefined}>
                       {msg.content && (
                         <div
                           className={`px-4 py-3 rounded-2xl text-sm md:text-base shadow-sm ${
@@ -458,7 +456,7 @@ export default function AIDashboard() {
         </main>
 
         {/* DYNAMIC SUGGESTION CARD */}
-        <div className="w-full px-4 z-40 pointer-events-none">
+        <div className="w-full px-4 z-40 pointer-events-none" data-tour-id="suggestionsCard">
           <div className="max-w-3xl mx-auto pointer-events-auto">
             <DynamicSuggestionCard
               suggestions={suggestions}
@@ -489,6 +487,9 @@ export default function AIDashboard() {
           <FaArrowDown />
         </button>
       )}
+
+      {/* RESIDENT TOUR */}
+      <ResidentTour />
     </LayoutWrapper>
   );
 }
