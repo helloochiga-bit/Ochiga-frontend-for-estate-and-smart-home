@@ -1,10 +1,13 @@
 // ochiga-frontend/src/app/ai-dashboard/settings/page.tsx
 "use client";
 
-import { FaUserCircle, FaBell, FaPlug, FaShieldAlt, FaTools, FaSignOutAlt } from "react-icons/fa";
+import { useState } from "react";
+import { FaUserCircle, FaBell, FaPlug, FaShieldAlt, FaTools, FaSignOutAlt, FaTimes } from "react-icons/fa";
 import { SettingsSection, SettingsItem } from "../../components/SettingsComponents";
 
 export default function ResidentSettingsPage() {
+  const [open, setOpen] = useState(true); // controls slide-up modal
+
   const sections = [
     {
       title: "Account",
@@ -34,38 +37,67 @@ export default function ResidentSettingsPage() {
     },
   ];
 
+  if (!open) return null; // hide page when closed
+
   return (
-    <div className="w-full min-h-screen bg-gray-100 flex flex-col">
-      {/* Profile Header */}
-      <div className="max-w-xl mx-auto px-6 pt-10 mb-6">
-        <div className="flex flex-col items-center text-center">
-          <FaUserCircle className="text-gray-500 text-7xl mb-3" />
-          <h2 className="text-lg font-semibold text-gray-900">Oyi</h2>
-          <p className="text-sm text-gray-500">@info.pavnigeria</p>
-          <div className="mt-4 px-4 py-1 rounded-full border border-gray-300 text-xs text-gray-500 bg-white">
+    <>
+      {/* Background overlay */}
+      <div
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+        onClick={() => setOpen(false)}
+      />
+
+      {/* Sliding modal */}
+      <div className="fixed inset-x-0 bottom-0 z-50 max-h-[95vh] h-[95vh] bg-gray-900 rounded-t-2xl shadow-xl transform transition-transform duration-300 ease-out animate-slide-up overflow-hidden flex flex-col">
+        
+        {/* Header with X button */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
+          <h2 className="text-lg font-semibold text-white">Settings</h2>
+          <button onClick={() => setOpen(false)} className="text-white text-xl p-1 hover:text-gray-300 transition">
+            <FaTimes />
+          </button>
+        </div>
+
+        {/* Profile Header */}
+        <div className="px-6 py-6 border-b border-gray-700 flex flex-col items-center text-center">
+          <FaUserCircle className="text-gray-400 text-7xl mb-3" />
+          <h2 className="text-lg font-semibold text-white">Oyi</h2>
+          <p className="text-sm text-gray-400">@info.pavnigeria</p>
+          <div className="mt-4 px-4 py-1 rounded-full border border-gray-600 text-xs text-gray-400 bg-gray-800">
             Free Plan
           </div>
         </div>
+
+        {/* Scrollable Sections */}
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+          {sections.map((section) => (
+            <SettingsSection key={section.title} title={section.title}>
+              {section.items.map((item) => (
+                <SettingsItem key={item.title} {...item} />
+              ))}
+            </SettingsSection>
+          ))}
+        </div>
+
+        {/* Logout Button */}
+        <div className="px-6 py-4 border-t border-gray-700">
+          <button className="w-full py-3 text-red-600 font-semibold bg-gray-800 rounded-xl border border-gray-700 shadow-sm flex items-center justify-center gap-2 hover:bg-red-700 transition">
+            <FaSignOutAlt />
+            Log Out
+          </button>
+        </div>
       </div>
 
-      {/* Scrollable Sections */}
-      <div className="max-w-xl mx-auto px-6 flex-1 overflow-y-auto space-y-8 pb-28">
-        {sections.map((section) => (
-          <SettingsSection key={section.title} title={section.title}>
-            {section.items.map((item) => (
-              <SettingsItem key={item.title} {...item} />
-            ))}
-          </SettingsSection>
-        ))}
-      </div>
-
-      {/* Sticky Logout */}
-      <div className="fixed bottom-4 left-0 w-full px-6 max-w-xl mx-auto">
-        <button className="w-full py-3 text-red-600 font-semibold bg-white rounded-xl border border-gray-200 shadow-sm flex items-center justify-center gap-2 hover:bg-red-50 transition">
-          <FaSignOutAlt />
-          Log Out
-        </button>
-      </div>
-    </div>
+      {/* Slide-up animation */}
+      <style jsx>{`
+        @keyframes slide-up {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
+        }
+        .animate-slide-up {
+          animation: slide-up 0.3s ease-out forwards;
+        }
+      `}</style>
+    </>
   );
 }
