@@ -19,6 +19,17 @@ export function detectPanelType(message: string): string | null {
   if (msg.includes("assistant")) return "assistant";
   if (msg.includes("ai")) return "ai";
 
+  // 🔹 New smart home panels
+  if (msg.includes("meter") || msg.includes("electricity")) return "smart_meter";
+  if (msg.includes("ir")) return "ir_sensor";
+  if (
+    msg.includes("sensor") ||
+    msg.includes("motion") ||
+    msg.includes("temperature") ||
+    msg.includes("air") ||
+    msg.includes("humidity")
+  ) return "sensors";
+
   // 🔹 New: device discovery triggers
   if (
     msg.includes("connect device") ||
