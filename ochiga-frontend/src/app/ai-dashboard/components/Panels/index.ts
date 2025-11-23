@@ -14,9 +14,13 @@ export { default as MessagePanel } from "./MessagePanel";
 export { default as IoTPanel } from "./IoTPanel";
 export { default as AiPanel } from "./AiPanel";
 export { default as AssistantPanel } from "./AssistantPanel";
-export { default as DeviceDiscoveryPanel } from "./DeviceDiscoveryPanel"; // ✅ added
+export { default as DeviceDiscoveryPanel } from "./DeviceDiscoveryPanel";
 
-// 🔹 New Smart Home Panels (if created)
+// 🔹 New Smart Home Panels
 export { default as IRSensorPanel } from "./IRSensorPanel";
 export { default as SmartMeterPanel } from "./SmartMeterPanel";
-export { default as SensorPanel } from "./SensorPanel"; // match the actual filename
+export { default as SensorPanel } from "./SensorPanel";
+
+// 🔹 AC and TV Panels
+export { default as ACPanel } from "./ACPanel";
+export { default as TVPanel } from "./TVPanel";
