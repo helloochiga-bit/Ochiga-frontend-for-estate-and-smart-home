@@ -12,6 +12,7 @@ import {
   FiHome,
   FiShield,
   FiKey,
+  FiActivity,
 } from "react-icons/fi";
 
 interface ResidentNotification {
@@ -84,7 +85,7 @@ export default function ResidentDynamicSuggestionCard({
   };
 
   const stopDrift = () => {
-    if (driftTimer.current) window.clearInterval(driftTimer.current);
+    if (driftTimer.current) window.clearInterval(drftTimer.current);
   };
 
   useEffect(() => {
@@ -93,7 +94,7 @@ export default function ResidentDynamicSuggestionCard({
   }, []);
 
   // --------------------------------------------------
-  // 🔹 Resident Suggestions (exactly like your app logic)
+  // 🔹 Resident Suggestions (updated with smart home devices)
   // --------------------------------------------------
   const residentSuggestions = useMemo<Suggestion[]>(
     () => [
@@ -106,26 +107,45 @@ export default function ResidentDynamicSuggestionCard({
       {
         id: "r2",
         title: "Turn Off All Lights",
-        subtitle: "whole apartment lights",
+        subtitle: "Whole apartment lights",
         payload: "turn_off_all_lights",
       },
       {
         id: "r3",
         title: "View Indoor Camera",
-        subtitle: "living room CCTV",
+        subtitle: "Living room CCTV",
         payload: "view_indoor_cctv",
       },
       {
         id: "r4",
         title: "Check Device Status",
-        subtitle: "active smart devices",
+        subtitle: "Active smart devices",
         payload: "check_device_status",
       },
       {
         id: "r5",
         title: "Secure Doors",
-        subtitle: "lock all smart locks",
+        subtitle: "Lock all smart locks",
         payload: "lock_all_doors",
+      },
+      // 🔹 New smart home suggestions
+      {
+        id: "r6",
+        title: "Check Smart Meter",
+        subtitle: "Monitor electricity usage",
+        payload: "check_smart_meter",
+      },
+      {
+        id: "r7",
+        title: "IR Sensor Panel",
+        subtitle: "Configure IR devices",
+        payload: "open_ir_sensor_panel",
+      },
+      {
+        id: "r8",
+        title: "Sensors & Motion",
+        subtitle: "View all smart sensors",
+        payload: "view_sensors_panel",
       },
     ],
     []
@@ -184,6 +204,9 @@ export default function ResidentDynamicSuggestionCard({
     if (key.includes("camera")) return <FiCamera size={16} className="text-gray-400" />;
     if (key.includes("lock") || key.includes("door")) return <FiLock size={16} className="text-gray-400" />;
     if (key.includes("device")) return <FiCpu size={16} className="text-gray-400" />;
+    if (key.includes("meter")) return <FiDollarSign size={16} className="text-gray-400" />;
+    if (key.includes("ir")) return <FiActivity size={16} className="text-gray-400" />;
+    if (key.includes("sensor") || key.includes("motion")) return <FiShield size={16} className="text-gray-400" />;
     return <FiKey size={16} className="text-gray-400" />;
   };
 
