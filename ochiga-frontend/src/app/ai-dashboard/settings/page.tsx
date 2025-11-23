@@ -1,3 +1,4 @@
+// ochiga-frontend/src/app/ai-dashboard/settings/page.tsx
 "use client";
 
 import { FaUserCircle, FaBell, FaPlug, FaShieldAlt, FaTools, FaSignOutAlt } from "react-icons/fa";
