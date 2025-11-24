@@ -14,12 +14,21 @@ export const authService = {
       body: JSON.stringify(data),
     });
 
-    // Store JWT
     localStorage.setItem("ochiga_token", res.access_token);
+    localStorage.setItem("ochiga_role", res.role); // resident or manager
     return res;
   },
 
   logout() {
     localStorage.removeItem("ochiga_token");
-  }
+    localStorage.removeItem("ochiga_role");
+  },
+
+  getRole() {
+    return localStorage.getItem("ochiga_role");
+  },
+
+  getToken() {
+    return localStorage.getItem("ochiga_token");
+  },
 };
