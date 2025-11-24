@@ -1,4 +1,3 @@
-# frontend/Dockerfile
 FROM node:20-alpine
 
 WORKDIR /app
@@ -8,6 +7,11 @@ RUN npm install
 
 COPY . .
 
+# Build production frontend
+RUN npm run build
+
+# Expose port
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+# Start frontend
+CMD ["npm", "run", "start"]
