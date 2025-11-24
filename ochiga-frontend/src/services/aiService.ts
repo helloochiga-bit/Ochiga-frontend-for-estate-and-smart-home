@@ -1,17 +1,15 @@
 import { apiRequest } from "@/lib/api";
 
 export const aiService = {
-  async chat(message: string) {
-    return apiRequest("/ai/chat", {
+  chat: (message: string) =>
+    apiRequest("/ai/chat", {
       method: "POST",
       body: JSON.stringify({ message }),
-    });
-  },
+    }),
 
-  async analyze(payload: any) {
-    return apiRequest("/ai/analyze", {
+  analyze: (payload: any) =>
+    apiRequest("/ai/analyze", {
       method: "POST",
       body: JSON.stringify({ payload }),
-    });
-  }
+    }),
 };
