@@ -1,9 +1,8 @@
 // src/lib/api.ts
-
 export const API_BASE_URL =
   typeof window !== "undefined"
-    ? (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000")
-    : "http://localhost:5000";
+    ? process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+    : "http://localhost:5000/api";
 
 export async function apiRequest(path: string, options: RequestInit = {}) {
   const token =
