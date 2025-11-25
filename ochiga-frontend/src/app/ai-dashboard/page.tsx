@@ -417,9 +417,9 @@ export default function AIDashboard() {
   }, [messages.length]);
 
   return (
-    <LayoutWrapper>
+    <LayoutWrapper menuOpen={menuOpen}>
       <header className="absolute top-4 left-4 z-50">
-        <HamburgerMenu onToggle={(o: boolean) => setMenuOpen(o)} />
+        <HamburgerMenu isOpen={menuOpen} onToggle={(o: boolean) => setMenuOpen(o)} />
       </header>
 
       <div className="fixed inset-0 flex flex-col w-full h-full">
@@ -432,7 +432,7 @@ export default function AIDashboard() {
           }}
         >
           <div
-            ref={chatRef}
+            ref={(el) => { messageRefs.current[0] = el; }}
             onScroll={handleScroll}
             className="flex-1 overflow-y-auto px-4 md:px-10 pt-20 pb-32 space-y-4 scroll-smooth"
           >
@@ -442,7 +442,7 @@ export default function AIDashboard() {
                 return (
                   <div
                     key={msg.id}
-                    ref={(el) => (messageRefs.current[i] = el)}
+                    ref={(el) => { messageRefs.current[i] = el; }}
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div className="flex flex-col max-w-[80%]">
