@@ -2,7 +2,12 @@
 
 import { ReactNode, useEffect } from "react";
 
-export default function LayoutWrapper({ children }: { children: ReactNode }) {
+interface LayoutWrapperProps {
+  children: ReactNode;
+  menuOpen?: boolean; // ✅ add this prop
+}
+
+export default function LayoutWrapper({ children, menuOpen = false }: LayoutWrapperProps) {
   useEffect(() => {
     // Prevent double-tap zoom
     const preventZoom = (e: TouchEvent) => {
