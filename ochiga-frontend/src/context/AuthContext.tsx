@@ -50,7 +50,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const loginUser = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const res = await apiRequest("/auth/login", "POST", { email, password });
+      const res = await apiRequest("/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
       if (res.token && res.user) {
         setUser(res.user);
         setToken(res.token);
@@ -69,7 +74,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const registerManager = async (data: RegisterManagerPayload) => {
     try {
-      await apiRequest("/auth/register-estate", "POST", data);
+      await apiRequest("/auth/register-estate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
       alert("Estate and manager registered successfully!");
       router.push("/auth");
     } catch (err: any) {
@@ -79,7 +88,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const inviteResident = async (data: InviteResidentPayload) => {
     try {
-      const res = await apiRequest("/auth/invite-resident", "POST", data, token || undefined);
+      const res = await apiRequest("/auth/invite-resident", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(data),
+      });
+
       if (res.inviteLink) {
         alert(`Resident invited successfully! Activation link:\n${res.inviteLink}`);
       } else {
