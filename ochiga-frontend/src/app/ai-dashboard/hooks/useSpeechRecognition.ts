@@ -1,9 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
-export default function useSpeechRecognition(onResult: (text: string, spoken?: boolean) => void) {
+export default function useSpeechRecognition(
+  onResult: (text: string, spoken?: boolean) => void
+) {
   const [listening, setListening] = useState(false);
   const recognitionRef = useRef<any>(null);
   const silenceTimer = useRef<number | null>(null);
+
+  // Wrap onResult in a stable ref to avoid missing dependency warning
+  const onResultRef = useRef(onResult);
+  useEffect(() => {
+    onResultRef.current = onResult;
+  }, [onResult]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -24,7 +32,7 @@ export default function useSpeechRecognition(onResult: (text: string, spoken?: b
 
     recognition.onresult = (e: any) => {
       const transcript = e.results[e.results.length - 1][0].transcript.trim();
-      if (transcript) onResult(transcript, true);
+      if (transcript) onResultRef.current(transcript, true);
       resetSilenceTimer(recognition);
     };
 
@@ -35,16 +43,16 @@ export default function useSpeechRecognition(onResult: (text: string, spoken?: b
     };
 
     recognitionRef.current = recognition;
-  }, []);
+  }, []); // now safe: onResultRef handles dynamic callback
 
-  const resetSilenceTimer = (recognition: any) => {
+  const resetSilenceTimer = useCallback((recognition: any) => {
     if (silenceTimer.current) clearTimeout(silenceTimer.current);
-    silenceTimer.current = setTimeout(() => {
+    silenceTimer.current = window.setTimeout(() => {
       try {
         recognition.stop();
       } catch {}
     }, 1800);
-  };
+  }, []);
 
   const startListening = () => recognitionRef.current?.start();
   const stopListening = () => recognitionRef.current?.stop();
