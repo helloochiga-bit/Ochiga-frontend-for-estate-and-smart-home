@@ -1,4 +1,3 @@
-// src/app/ai-dashboard/components/Panels/DeviceDiscoveryPanel.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -13,9 +12,13 @@ type Device = {
   aiSummary?: string;
 };
 
-export default function DeviceDiscoveryPanel() {
+interface DeviceDiscoveryPanelProps {
+  devices?: Device[]; // allow external devices from props
+}
+
+export default function DeviceDiscoveryPanel({ devices: initialDevices }: DeviceDiscoveryPanelProps) {
   const [isScanning, setIsScanning] = useState(false);
-  const [devices, setDevices] = useState<Device[]>([]);
+  const [devices, setDevices] = useState<Device[]>(initialDevices || []);
   const [error, setError] = useState("");
 
   /* -------------------------
@@ -63,8 +66,8 @@ export default function DeviceDiscoveryPanel() {
   };
 
   useEffect(() => {
-    discoverDevices();
-  }, []);
+    if (!initialDevices) discoverDevices(); // only fetch if no devices passed via props
+  }, [initialDevices]);
 
   return (
     <div className="relative mt-2 p-3 bg-gray-900 border border-gray-700 rounded-xl text-xs md:text-sm transition-all duration-300 animate-fadeIn">
