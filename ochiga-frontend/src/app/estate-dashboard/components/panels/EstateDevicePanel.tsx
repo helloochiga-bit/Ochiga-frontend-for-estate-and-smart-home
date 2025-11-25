@@ -14,6 +14,10 @@ type Device = {
   location?: string;
 };
 
+type DeviceResponse =
+  | { devices: Device[]; error?: undefined }
+  | { error: any; devices?: undefined };
+
 export default function EstateDevicePanel({
   estateId = "current-estate",
   devices: initial = [],
@@ -35,9 +39,17 @@ export default function EstateDevicePanel({
   const loadEstateDevices = useCallback(async () => {
     if (!estateId) return toast.error("Estate ID is missing");
     setLoading(true);
+
     try {
-      const res = await deviceService.getDevices(estateId);
-      const loaded = Array.isArray(res?.devices) ? res.devices : res || [];
+      const res: DeviceResponse = await deviceService.getDevices(estateId);
+
+      // ✅ Ensure loaded is always an array
+      const loaded: Device[] = Array.isArray(res?.devices)
+        ? res.devices
+        : Array.isArray(res)
+        ? res as Device[]
+        : [];
+
       setDevices(
         loaded.map(d => ({
           ...d,
@@ -56,19 +68,37 @@ export default function EstateDevicePanel({
     loadEstateDevices();
   }, [loadEstateDevices]);
 
-  const scanDevices = async () => { /* remains unchanged */ };
-  const toggle = async (id: string) => { /* remains unchanged */ };
+  const scanDevices = async () => {
+    toast.success("Scanning devices (demo)...");
+    // implement actual scanning logic here
+  };
+
+  const toggle = async (id: string) => {
+    setDevices(prev =>
+      prev.map(d =>
+        d.id === id
+          ? { ...d, status: d.status === "online" ? "offline" : "online" }
+          : d
+      )
+    );
+    toast.success("Toggled device status (demo)");
+  };
 
   const filtered = Array.isArray(devices)
     ? filter
       ? devices.filter(d =>
-          (d.name + d.type + d.location).toLowerCase().includes(filter.toLowerCase())
+          ((d.name || "") + (d.type || "") + (d.location || ""))
+            .toLowerCase()
+            .includes(filter.toLowerCase())
         )
       : devices
     : [];
 
   return (
-    <div className="p-4 rounded-lg shadow-sm w-full" style={{ backgroundColor: darkBlue, border: `1px solid ${borderBlue}` }}>
+    <div
+      className="p-4 rounded-lg shadow-sm w-full"
+      style={{ backgroundColor: darkBlue, border: `1px solid ${borderBlue}` }}
+    >
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
         <FaPlug color={maroon} className="text-sm" />
@@ -100,7 +130,11 @@ export default function EstateDevicePanel({
           <div className="text-gray-300 text-sm">No devices found</div>
         ) : (
           filtered.map(d => (
-            <div key={d.id} className="p-3 rounded-lg cursor-pointer transition" style={{ backgroundColor: cardBlue, border: `1px solid ${borderBlue}` }}>
+            <div
+              key={d.id}
+              className="p-3 rounded-lg cursor-pointer transition"
+              style={{ backgroundColor: cardBlue, border: `1px solid ${borderBlue}` }}
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-sm font-medium text-white">{d.name}</div>
@@ -108,7 +142,10 @@ export default function EstateDevicePanel({
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <button className="text-gray-300 text-sm" onClick={() => onAction?.(d.id, "open")}>
+                  <button
+                    className="text-gray-300 text-sm"
+                    onClick={() => onAction?.(d.id, "open")}
+                  >
                     <FaWrench />
                   </button>
 
@@ -124,7 +161,9 @@ export default function EstateDevicePanel({
 
               <div className="flex items-center justify-between mt-2 text-xs">
                 <div className="text-gray-400">{d.status === "online" ? "Active now" : "Offline"}</div>
-                <div className={d.status === "online" ? "text-green-400" : "text-red-400"}>{d.status}</div>
+                <div className={d.status === "online" ? "text-green-400" : "text-red-400"}>
+                  {d.status}
+                </div>
               </div>
             </div>
           ))
