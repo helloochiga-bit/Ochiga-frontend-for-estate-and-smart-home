@@ -1,4 +1,3 @@
-// ochiga-frontend/src/app/ai-dashboard/components/Panels/SensorPanel.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -27,7 +26,13 @@ export default function SensorPanel() {
   };
 
   useEffect(() => {
-    fetchSensors();
+    // Wrap async logic in nested function
+    const init = async () => {
+      await fetchSensors();
+    };
+    init();
+
+    // Subscribe to Supabase changes
     const subscription = supabase
       .channel("public:sensors")
       .on(
@@ -36,7 +41,11 @@ export default function SensorPanel() {
         () => fetchSensors()
       )
       .subscribe();
-    return () => supabase.removeChannel(subscription);
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(subscription);
+    };
   }, []);
 
   return (
