@@ -14,6 +14,13 @@ import {
   FiActivity,
 } from "react-icons/fi";
 
+interface Suggestion {
+  id: string;
+  title: string;
+  subtitle?: string;
+  payload?: string;
+}
+
 interface ResidentNotification {
   type: "alert" | "video" | "access" | "message";
   title: string;
@@ -22,30 +29,20 @@ interface ResidentNotification {
   onAction?: () => void;
 }
 
-interface Suggestion {
-  id: string;
-  title: string;
-  subtitle?: string;
-  payload?: string;
-}
-
 interface Props {
-  onSend: (payload: string) => void;
+  suggestions?: Suggestion[]; // ✅ add suggestions array
+  onSend: (text?: string, spoken?: boolean) => Promise<void>; // ✅ match page.tsx handleSend
   isTyping?: boolean;
   assistantActive?: boolean;
   notification?: ResidentNotification | null;
 }
 
-/**
- * Resident DynamicSuggestionCard
- * - Style and UI unchanged
- * - Natural language and realistic smart-home commands
- */
-export default function ResidentDynamicSuggestionCard({
+export default function DynamicSuggestionCard({
+  suggestions,
   onSend,
   isTyping = false,
-  notification = null,
   assistantActive = false,
+  notification = null,
 }: Props) {
   const [visible, setVisible] = useState(true);
   const [showNotification, setShowNotification] = useState(false);
@@ -69,26 +66,13 @@ export default function ResidentDynamicSuggestionCard({
       if (container.scrollLeft <= 1) direction = 1;
     }, 18);
   };
-  const stopDrift = () => { if (driftTimer.current) window.clearInterval(driftTimer.current); };
-  useEffect(() => { startDrift(); return stopDrift; }, []);
-
-  // -----------------------------
-  // Resident suggestions (natural commands)
-  // -----------------------------
-  const residentSuggestions = useMemo<Suggestion[]>(() => [
-    { id: "r1", title: "Turn on the living room lights", subtitle: "Set the lights to on", payload: "lights_living_on" },
-    { id: "r2", title: "Dim bedroom lights", subtitle: "Create a cozy mood", payload: "lights_bedroom_dim" },
-    { id: "r3", title: "Turn off all lights", subtitle: "Switch off every light", payload: "lights_all_off" },
-    { id: "r4", title: "Check electricity usage", subtitle: "Smart meter readings", payload: "check_smart_meter" },
-    { id: "r5", title: "View living room camera", subtitle: "CCTV live feed", payload: "view_cctv_living" },
-    { id: "r6", title: "Lock all doors", subtitle: "Secure the home", payload: "lock_all_doors" },
-    { id: "r7", title: "Check sensor status", subtitle: "Motion, IR & environmental sensors", payload: "check_sensors" },
-    { id: "r8", title: "IR device settings", subtitle: "Adjust remote-controlled devices", payload: "ir_device_panel" },
-    { id: "r9", title: "Discover new devices", subtitle: "Scan and pair smart devices", payload: "discover_devices" },
-    { id: "r10", title: "Manage visitors", subtitle: "Add, remove or schedule guests", payload: "visitor_panel" },
-  ], []);
-
-  const displayList = residentSuggestions;
+  const stopDrift = () => {
+    if (driftTimer.current) window.clearInterval(driftTimer.current);
+  };
+  useEffect(() => {
+    startDrift();
+    return stopDrift;
+  }, []);
 
   // -----------------------------
   // Hide on scroll / show on idle
@@ -106,7 +90,10 @@ export default function ResidentDynamicSuggestionCard({
       }, 280);
     };
     window.addEventListener("scroll", handler, { passive: true });
-    return () => { window.removeEventListener("scroll", handler); if (hideTimer.current) window.clearTimeout(hideTimer.current); };
+    return () => {
+      window.removeEventListener("scroll", handler);
+      if (hideTimer.current) window.clearTimeout(hideTimer.current);
+    };
   }, [isTyping, assistantActive]);
 
   // -----------------------------
@@ -137,8 +124,10 @@ export default function ResidentDynamicSuggestionCard({
   };
 
   // -----------------------------
-  // RENDER
+  // Render
   // -----------------------------
+  const displayList = suggestions ?? [];
+
   return (
     <>
       {/* Notification */}
