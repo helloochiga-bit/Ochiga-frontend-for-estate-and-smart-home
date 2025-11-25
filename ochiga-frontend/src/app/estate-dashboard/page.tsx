@@ -12,8 +12,6 @@ import EstateAccountingPanel from "./components/panels/EstateAccountingPanel";
 import EstateCommunityPanel from "./components/panels/EstateCommunityPanel";
 import EstateHomeCreationPanel from "./components/panels/EstateHomeCreationPanel";
 
-// Removed DeviceDiscoveryPanel import
-
 import { detectEstatePanelType } from "./utils/estatePanelDetection";
 import { FaArrowDown, FaLightbulb, FaWallet, FaVideo, FaBolt } from "react-icons/fa";
 
@@ -124,14 +122,12 @@ export default function EstateDashboard() {
     }, 120);
   };
 
-  // -------- Updated handleAction --------
   const handleAction = (actions: Array<{ type: string; action: string; target: string }>, userMessage?: string) => {
     actions.forEach((a) => {
       let reply = "I didn't quite get that. Can you repeat?";
       let panel: string | null = null;
 
       if (a.type === "device") {
-        // Removed device_discovery references
         panel = "estate_devices";
         reply = "Opening estate devices panel.";
       }
@@ -173,7 +169,7 @@ export default function EstateDashboard() {
 
     const panel = detectEstatePanelType(messageText);
 
-    if (panel && panel !== "device_discovery") { // Removed device_discovery
+    if (panel && panel !== "device_discovery") {
       const reply =
         panel === "estate_devices"
           ? "Estate device panel opened."
@@ -221,7 +217,6 @@ export default function EstateDashboard() {
     }, 120);
   }
 
-  // ---------------- Suggestions ----------------
   const suggestions = [
     { title: "View estate devices", icon: FaLightbulb, description: "Scan and assign devices to homes" },
     { title: "View power status", icon: FaBolt, description: "Monitor estate power and consumption" },
@@ -277,7 +272,7 @@ export default function EstateDashboard() {
                 return (
                   <div
                     key={msg.id}
-                    ref={(el) => (messageRefs.current[i] = el)}
+                    ref={(el) => { messageRefs.current[i] = el; }} // ✅ FIXED
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div className="flex flex-col max-w-[80%]">
