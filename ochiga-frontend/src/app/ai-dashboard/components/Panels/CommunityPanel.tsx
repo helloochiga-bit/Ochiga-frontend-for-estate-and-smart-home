@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import {
   FaHeart,
   FaRegHeart,
@@ -99,9 +100,11 @@ export default function CommunityPanel() {
         />
 
         {media.image && (
-          <img
+          <Image
             src={media.image}
             alt="preview"
+            width={500}
+            height={300}
             className="rounded-md max-h-40 object-cover border border-gray-700"
           />
         )}
@@ -189,10 +192,12 @@ export default function CommunityPanel() {
             <p className="mt-1 text-gray-300 text-[13px]">{post.content}</p>
 
             {post.image && (
-              <img
+              <Image
                 src={post.image}
                 alt="post"
-                className="mt-2 rounded-md border border-gray-700 max-h-52 object-cover"
+                width={500}
+                height={300}
+                className="mt-2 rounded-md border border-gray-700 object-cover max-h-52"
               />
             )}
             {post.video && (
