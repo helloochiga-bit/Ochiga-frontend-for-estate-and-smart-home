@@ -475,12 +475,11 @@ export default function AIDashboard() {
         {/* FOOTER */}
         <div className="w-full px-4 py-2 bg-gray-900 border-t border-gray-700 flex justify-center items-center z-50">
           <ChatFooter
-            input={input}
-            setInput={setInput}
-            onMicClick={handleMicClick}
-            onSend={() => handleSend(undefined, false)}
-            onAction={handleAction}
-          />
+  input={input}
+  setInput={setInput}
+  onSend={() => handleSend(undefined, false)}
+  onAction={handleAction}
+/>
         </div>
       </div>
 
