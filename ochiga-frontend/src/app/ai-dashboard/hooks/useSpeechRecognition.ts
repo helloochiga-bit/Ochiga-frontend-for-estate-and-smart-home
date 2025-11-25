@@ -7,11 +7,16 @@ export default function useSpeechRecognition(
   const recognitionRef = useRef<any>(null);
   const silenceTimer = useRef<number | null>(null);
 
-  // Wrap onResult in a stable ref to avoid missing dependency warning
+  // Stable onResult ref
   const onResultRef = useRef(onResult);
-  useEffect(() => {
-    onResultRef.current = onResult;
-  }, [onResult]);
+  useEffect(() => { onResultRef.current = onResult; }, [onResult]);
+
+  const resetSilenceTimer = useCallback((recognition: any) => {
+    if (silenceTimer.current) clearTimeout(silenceTimer.current);
+    silenceTimer.current = window.setTimeout(() => {
+      try { recognition.stop(); } catch {}
+    }, 1800);
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -43,16 +48,7 @@ export default function useSpeechRecognition(
     };
 
     recognitionRef.current = recognition;
-  }, []); // now safe: onResultRef handles dynamic callback
-
-  const resetSilenceTimer = useCallback((recognition: any) => {
-    if (silenceTimer.current) clearTimeout(silenceTimer.current);
-    silenceTimer.current = window.setTimeout(() => {
-      try {
-        recognition.stop();
-      } catch {}
-    }, 1800);
-  }, []);
+  }, [resetSilenceTimer]); // ✅ added to dependencies
 
   const startListening = () => recognitionRef.current?.start();
   const stopListening = () => recognitionRef.current?.stop();
