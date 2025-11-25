@@ -7,14 +7,14 @@ interface QrScannerProps {
 }
 
 export default function QrScanner({ onScan }: QrScannerProps) {
-  // ✅ Initialize as null so TypeScript is happy
   const timerRef = useRef<number | null>(null);
 
   // Cleanup safely
   useEffect(() => {
+    const currentTimer = timerRef.current;
     return () => {
-      if (timerRef.current !== null) {
-        window.clearTimeout(timerRef.current);
+      if (currentTimer !== null) {
+        window.clearTimeout(currentTimer);
       }
     };
   }, []);
