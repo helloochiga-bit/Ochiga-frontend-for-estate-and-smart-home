@@ -1,13 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import LoaderCircle from "../components/ui/LoaderCircle";
 
-// Dynamically import QR scanner (no SSR)
 const QrScanner = dynamic(() => import("../components/QrScanner"), { ssr: false });
 
-// Inner client component to safely use client-only hooks
 function OnboardTokenHandler() {
   const { useRouter, useSearchParams } = require("next/navigation");
   const router = useRouter();
@@ -40,7 +38,6 @@ function OnboardTokenHandler() {
 
   useEffect(() => {
     if (tokenParam) verifyTokenAndProceed(tokenParam);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokenParam]);
 
   return (
@@ -50,11 +47,9 @@ function OnboardTokenHandler() {
           Point your device camera at the QR sent to your email.
         </p>
       )}
-
       <div className="bg-gray-900 p-4 rounded border border-gray-800">
         <QrScanner onScan={(data) => { if (data) verifyTokenAndProceed(data); }} />
       </div>
-
       {verifying && (
         <div className="flex flex-col items-center mt-6 text-center">
           <LoaderCircle />
@@ -69,8 +64,13 @@ export default function OnboardPage() {
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center">
       <div className="w-full max-w-xl p-4">
-        <h2 className="text-lg font-semibold mb-3 text-center">Scan QR to complete onboarding</h2>
-        <OnboardTokenHandler />
+        <h2 className="text-lg font-semibold mb-3 text-center">
+          Scan QR to complete onboarding
+        </h2>
+        {/* Suspense wrapper required by Next.js 15 */}
+        <Suspense fallback={<LoaderCircle />}>
+          <OnboardTokenHandler />
+        </Suspense>
       </div>
     </div>
   );
