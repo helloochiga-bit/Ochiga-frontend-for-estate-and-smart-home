@@ -1,3 +1,4 @@
+// -------------- FULL FILE BELOW --------------
 "use client";
 
 import { useRef, useState, useEffect } from "react";
@@ -42,7 +43,7 @@ import { aiService } from "./services/aiService";
 import { deviceService } from "./services/deviceService";
 
 /* ---------------------------------------------
-   🔧 FIX: Add Suggestion type for TS correctness
+   TS Types
 --------------------------------------------- */
 type Suggestion = {
   id: string;
@@ -74,26 +75,26 @@ export default function AIDashboard() {
   ]);
 
   const [activePanel, setActivePanel] = useState<string | null>(null);
-
-  /* 🔧 FIX: Correct menuOpen type + passing to wrapper */
   const [menuOpen, setMenuOpen] = useState(false);
 
   const { listening, startListening, stopListening } = useSpeechRecognition(handleSend);
 
+  // Chat window + messages ref
   const chatRef = useRef<HTMLDivElement | null>(null);
+  const messageRefs = useRef<(HTMLDivElement | null)[]>([]);
+
   const [showScrollDown, setShowScrollDown] = useState(false);
   const [discoveredDevices, setDiscoveredDevices] = useState<any[]>([]);
-  const messageRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const createId = () => Math.random().toString(36).substring(2, 9);
 
+  /* CHECK BOTTOM */
   const isAtBottom = () => {
     if (!chatRef.current) return true;
     const { scrollTop, scrollHeight, clientHeight } = chatRef.current;
     return scrollTop + clientHeight >= scrollHeight - 100;
   };
 
-  /* ----- scroll detection ----- */
   useEffect(() => {
     if (!chatRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = chatRef.current;
@@ -116,7 +117,7 @@ export default function AIDashboard() {
 
   const handleMicClick = () => (listening ? stopListening() : startListening());
 
-  /* ----- panel movement ----- */
+  /* MOVE PANEL BLOCK */
   const movePanelBlockToBottom = (panelTag: string) => {
     setMessages((prev) => {
       const grouped = prev.filter((m) => m.panelTag === panelTag);
@@ -135,6 +136,7 @@ export default function AIDashboard() {
     }, 120);
   };
 
+  /* APPEND PANEL BLOCK */
   const appendPanelBlock = (userText: string, assistantReply: string, panel: string) => {
     const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     const tag = panel;
@@ -174,7 +176,7 @@ export default function AIDashboard() {
     }, 120);
   };
 
-  /* ---------- DEVICE ACTION HANDLING ----------- */
+  /* --------- HANDLE ACTIONS FROM TEXT ---------- */
   const handleAction = (
     actions: Array<{ type: string; action: string; target: string }>,
     userMessage?: string
@@ -204,11 +206,6 @@ export default function AIDashboard() {
 
       if (a.type === "info" && a.target === "status") {
         reply = "Status is good — home is secure, power stable.";
-        panel = null;
-      }
-
-      if (a.type === "system" && a.target === "assistant") {
-        reply = "Okay, turning off Ochiga Assistant.";
         panel = null;
       }
 
@@ -255,7 +252,7 @@ export default function AIDashboard() {
     });
   };
 
-  /* ---------- HANDLE SEND ----------- */
+  /* ---------- HANDLE SEND ---------- */
   async function handleSend(text?: string, spoken = false) {
     const messageText = (text ?? input).trim();
     if (!messageText) return;
@@ -265,7 +262,7 @@ export default function AIDashboard() {
     const actions: Array<{ type: string; action: string; target: string }> = [];
     const lower = messageText.toLowerCase();
 
-    // DEVICE LOGIC
+    // Device keywords
     if (lower.includes("turn on") && lower.includes("ac")) actions.push({ type: "device", action: "turn_on", target: "ac" });
     if (lower.includes("turn off") && lower.includes("ac")) actions.push({ type: "device", action: "turn_off", target: "ac" });
 
@@ -281,10 +278,6 @@ export default function AIDashboard() {
     if (lower.includes("visitor")) actions.push({ type: "schedule", action: "create", target: "visitor" });
     if (lower.includes("status")) actions.push({ type: "info", action: "query", target: "status" });
 
-    if (lower.includes("shut down") || lower.includes("sleep") || lower.includes("assistant off"))
-      actions.push({ type: "system", action: "shutdown", target: "assistant" });
-
-    // SMART PANELS
     if (lower.includes("meter")) actions.push({ type: "device", action: "view", target: "smart_meter" });
     if (lower.includes("ir")) actions.push({ type: "device", action: "view", target: "ir_sensor" });
     if (lower.includes("sensor")) actions.push({ type: "device", action: "view", target: "sensors" });
@@ -359,9 +352,7 @@ export default function AIDashboard() {
     }, 120);
   }
 
-  /* --------------------------------------
-     🔧 FIX: Convert suggestions into objects
-  -------------------------------------- */
+  /* SUGGESTIONS */
   const suggestions: Suggestion[] = [
     { id: "1", title: "Turn on living room lights" },
     { id: "2", title: "Turn on AC" },
@@ -376,7 +367,7 @@ export default function AIDashboard() {
     { id: "11", title: "View sensors" }
   ];
 
-  /* -------- PANEL RENDERER -------- */
+  /* PANEL SELECTOR */
   const renderPanel = (panel: string | null | undefined) => {
     switch (panel) {
       case "lights": return <LightControl />;
@@ -405,7 +396,7 @@ export default function AIDashboard() {
     }
   };
 
-  /* -------- AUTO SCROLL -------- */
+  /* AUTO-SCROLL NEW MESSAGE */
   useEffect(() => {
     if (isAtBottom()) scrollToBottom("auto");
   }, [messages.length]);
@@ -413,11 +404,12 @@ export default function AIDashboard() {
   return (
     <LayoutWrapper menuOpen={menuOpen}>
       
-      {/* 🔧 FIX: HamburgerMenu props now correct */}
+      {/* MENU */}
       <header className="absolute top-4 left-4 z-50">
         <HamburgerMenu isOpen={menuOpen} onToggle={(o: boolean) => setMenuOpen(o)} />
       </header>
 
+      {/* MAIN WRAPPER */}
       <div className="fixed inset-0 flex flex-col w-full h-full">
         <main
           className="flex-1 flex flex-col overflow-hidden"
@@ -437,12 +429,12 @@ export default function AIDashboard() {
               {messages.map((msg, i) => (
                 <div
                   key={msg.id}
-                  ref={(el) => (messageRefs.current[i] = el)}
+                  ref={(el) => { messageRefs.current[i] = el; }} // 🔧 FIXED
                   className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div className="flex flex-col max-w-[80%]">
 
-                    {/* Message bubble */}
+                    {/* TEXT BUBBLE */}
                     {msg.content && (
                       <div
                         className={`px-4 py-3 rounded-2xl text-sm md:text-base shadow-sm ${
@@ -455,7 +447,7 @@ export default function AIDashboard() {
                       </div>
                     )}
 
-                    {/* Panel */}
+                    {/* PANEL BLOCK */}
                     {msg.panel && (
                       <div className="mt-1 w-full">{renderPanel(msg.panel)}</div>
                     )}
@@ -468,7 +460,7 @@ export default function AIDashboard() {
           </div>
         </main>
 
-        {/* Suggestions */}
+        {/* SUGGESTIONS */}
         <div className="w-full px-4 z-40 pointer-events-none">
           <div className="max-w-3xl mx-auto pointer-events-auto">
             <DynamicSuggestionCard
@@ -479,7 +471,7 @@ export default function AIDashboard() {
           </div>
         </div>
 
-        {/* Chat footer */}
+        {/* FOOTER */}
         <div className="w-full px-4 py-2 bg-gray-900 border-t border-gray-700 flex justify-center items-center z-50">
           <ChatFooter
             input={input}
