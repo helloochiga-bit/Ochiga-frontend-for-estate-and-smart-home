@@ -2,7 +2,12 @@
 
 import { ReactNode, useEffect } from "react";
 
-export default function LayoutWrapper({ children }: { children: ReactNode }) {
+interface LayoutWrapperProps {
+  children: ReactNode;
+  menuOpen?: boolean; // <-- add this
+}
+
+export default function LayoutWrapper({ children, menuOpen = false }: LayoutWrapperProps) {
   useEffect(() => {
     // Prevent double-tap zoom
     const preventZoom = (e: TouchEvent) => {
@@ -34,12 +39,14 @@ export default function LayoutWrapper({ children }: { children: ReactNode }) {
     <div
       className="w-screen h-screen relative bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 text-white"
       style={{
-        touchAction: "pan-x pan-y", // allows scroll
+        touchAction: "pan-x pan-y",
         WebkitTouchCallout: "none",
         WebkitUserSelect: "none",
-        msTouchAction: "pan-y", // vertical scroll allowed
-        overflowY: "auto", // enable scrolling
+        msTouchAction: "pan-y",
+        overflowY: "auto",
         overflowX: "hidden",
+        transition: "all 0.5s",
+        transform: menuOpen ? "translateX(70%)" : "translateX(0)", // optional if you want menu effect
       }}
     >
       {children}
