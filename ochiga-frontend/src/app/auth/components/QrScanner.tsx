@@ -2,15 +2,20 @@
 
 import { useEffect, useRef } from "react";
 
-export default function QrScanner({ onScan }: { onScan: (data: string | null) => void }) {
-  const timerRef = useRef<number>();
+interface QrScannerProps {
+  onScan: (data: string | null) => void;
+}
+
+export default function QrScanner({ onScan }: QrScannerProps) {
+  // ✅ Initialize as null so TypeScript is happy
+  const timerRef = useRef<number | null>(null);
 
   // Cleanup safely
   useEffect(() => {
-    // Demo: no timer is actually running, but if you add one in the future, this is safe
-    const currentTimer = timerRef.current;
     return () => {
-      if (currentTimer) window.clearTimeout(currentTimer);
+      if (timerRef.current !== null) {
+        window.clearTimeout(timerRef.current);
+      }
     };
   }, []);
 
