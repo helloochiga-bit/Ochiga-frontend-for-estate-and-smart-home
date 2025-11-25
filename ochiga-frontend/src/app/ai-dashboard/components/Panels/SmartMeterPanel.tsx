@@ -1,4 +1,3 @@
-// ochiga-frontend/src/app/ai-dashboard/components/Panels/SmartMeterPanel.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -27,7 +26,12 @@ export default function SmartMeterPanel() {
   };
 
   useEffect(() => {
-    fetchMeters();
+    // Wrap async logic in a nested function
+    const init = async () => {
+      await fetchMeters();
+    };
+    init();
+
     const subscription = supabase
       .channel("public:smart_meters")
       .on(
@@ -36,17 +40,17 @@ export default function SmartMeterPanel() {
         () => fetchMeters()
       )
       .subscribe();
-    return () => supabase.removeChannel(subscription);
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
   }, []);
 
   const loadToken = async (meter: Meter) => {
     const amt = parseFloat(amount);
     if (!amt || amt <= 0) return;
 
-    // Update balance
     await supabase.from("smart_meters").update({ balance: meter.balance + amt }).eq("id", meter.id);
-
-    // Add history record
     await supabase.from("meter_history").insert({ meter_id: meter.id, amount: amt, date: new Date().toISOString() });
 
     setAmount("");
@@ -85,7 +89,6 @@ export default function SmartMeterPanel() {
                   Load Token
                 </button>
 
-                {/* History */}
                 <div className="mt-2 max-h-40 overflow-y-auto bg-gray-800 border border-gray-700 rounded-md p-2 text-[11px]">
                   <p className="font-semibold text-white mb-1">History:</p>
                   {meter.history?.length ? (
