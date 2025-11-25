@@ -3,7 +3,9 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
 
-// Types for different cards
+// ------------------------
+// Types
+// ------------------------
 interface Resident {
   name: string;
   estate: string;
@@ -43,7 +45,6 @@ interface CommunityEvent {
   time: string;
 }
 
-// Dashboard context props
 interface DashboardContextProps {
   notifications: string[];
   hasNewNotif: boolean;
@@ -64,7 +65,7 @@ interface DashboardContextProps {
   toggleProfile: () => void;
   toggleSearch: () => void;
 
-  // AI actions
+  // AI / device actions
   updateWallet: (amount: number) => void;
   toggleDevice: (room: string, device: keyof DeviceState) => void;
   updateUtility: (key: keyof Utilities, value: any) => void;
@@ -75,15 +76,23 @@ interface DashboardContextProps {
   updateResident: (resident: Partial<Resident>) => void;
 }
 
+// ------------------------
+// Context
+// ------------------------
 const DashboardContext = createContext<DashboardContextProps | undefined>(undefined);
 
+// ------------------------
+// Provider
+// ------------------------
 export const DashboardProvider = ({ children }: { children: ReactNode }) => {
+  // Notifications & UI state
   const [notifications, setNotifications] = useState<string[]>([]);
   const [hasNewNotif, setHasNewNotif] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
+  // Resident info
   const [resident, setResident] = useState<Resident>({
     name: "John Doe",
     estate: "Ochiga Estate",
@@ -91,6 +100,7 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
     address: "12 Sunrise Avenue",
   });
 
+  // Wallet & Utilities
   const [wallet, setWallet] = useState<Wallet>({ balance: 42300 });
   const [utilities, setUtilities] = useState<Utilities>({
     internet: true,
@@ -98,28 +108,37 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
     water: 80,
   });
 
+  // Devices
   const [devices, setDevices] = useState<Devices>({
     "Living Room": { light: false, fan: false, ac: false },
-    Bedroom: { light: false, fan: false },
-    Kitchen: { light: false },
+    Bedroom: { light: false, fan: false, ac: false },
+    Kitchen: { light: false, fan: false, ac: false },
   });
 
+  // Visitors & community events
   const [visitors, setVisitors] = useState<Visitor[]>([]);
   const [communityEvents, setCommunityEvents] = useState<CommunityEvent[]>([]);
 
+  // ------------------------
   // Notification actions
+  // ------------------------
   const addNotification = (msg: string) => {
     setNotifications((prev) => [msg, ...prev]);
     setHasNewNotif(true);
   };
+
   const markNotifRead = () => setHasNewNotif(false);
 
-  // UI toggles
-  const toggleSidebar = () => setSidebarOpen((p) => !p);
-  const toggleProfile = () => setProfileOpen((p) => !p);
-  const toggleSearch = () => setSearchOpen((p) => !p);
+  // ------------------------
+  // UI toggle actions
+  // ------------------------
+  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
+  const toggleProfile = () => setProfileOpen((prev) => !prev);
+  const toggleSearch = () => setSearchOpen((prev) => !prev);
 
-  // AI actions
+  // ------------------------
+  // AI / device actions
+  // ------------------------
   const updateWallet = (amount: number) => {
     setWallet((prev) => ({ balance: prev.balance + amount }));
     addNotification(`Wallet updated: ₦${amount}`);
@@ -197,6 +216,9 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
+// ------------------------
+// Custom hook
+// ------------------------
 export const useDashboard = () => {
   const context = useContext(DashboardContext);
   if (!context) throw new Error("useDashboard must be used within DashboardProvider");
