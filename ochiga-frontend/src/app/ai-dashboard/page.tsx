@@ -11,8 +11,8 @@ import useSpeechRecognition from "./hooks/useSpeechRecognition";
 
 import {
   LightControl,
-  ACPanel,             // ✅ AC
-  TVPanel,             // ✅ TV
+  ACPanel,
+  TVPanel,
   WalletPanel,
   CCTVPanel,
   EstatePanel,
@@ -172,42 +172,34 @@ export default function AIDashboard() {
             reply = a.action === "turn_on" ? "Turning on your lights." : "Turning off your lights.";
             panel = "lights";
             break;
-
           case "ac":
             reply = a.action === "turn_on" ? "Switching on the AC." : "Turning off the AC.";
             panel = "ac_panel";
             break;
-
           case "tv":
             reply = a.action === "turn_on" ? "Turning on the TV." : "Turning off the TV.";
             panel = "tv_panel";
             break;
-
           case "camera":
             reply = "Accessing your CCTV cameras.";
             panel = "cctv";
             break;
-
           case "smart_meter":
             reply = "Here’s your electricity meter reading.";
             panel = "smart_meter";
             break;
-
           case "ir_sensor":
             reply = "Opening IR device control panel.";
             panel = "ir_sensor";
             break;
-
           case "sensors":
             reply = "Showing all sensor data in your home.";
             panel = "sensors";
             break;
-
           case "devices":
             reply = "Let’s scan for nearby devices…";
             panel = "devices";
             break;
-
           case "door":
             reply = "Opening the door now.";
             panel = null;
@@ -287,7 +279,7 @@ export default function AIDashboard() {
     const actions: Array<{ type: string; action: string; target: string }> = [];
     const lower = messageText.toLowerCase();
 
-    // === DEVICE COMMANDS ===
+    // DEVICE COMMANDS
     if (lower.includes("turn on") && lower.includes("ac")) actions.push({ type: "device", action: "turn_on", target: "ac" });
     if (lower.includes("turn off") && lower.includes("ac")) actions.push({ type: "device", action: "turn_off", target: "ac" });
 
@@ -304,7 +296,7 @@ export default function AIDashboard() {
     if (lower.includes("shut down") || lower.includes("sleep") || lower.includes("assistant off"))
       actions.push({ type: "system", action: "shutdown", target: "assistant" });
 
-    // === SMART HOME PANELS ===
+    // SMART HOME PANELS
     if (lower.includes("meter") || lower.includes("electricity")) actions.push({ type: "device", action: "view", target: "smart_meter" });
     if (lower.includes("ir")) actions.push({ type: "device", action: "view", target: "ir_sensor" });
     if (lower.includes("sensor") || lower.includes("motion") || lower.includes("air")) actions.push({ type: "device", action: "view", target: "sensors" });
@@ -425,7 +417,7 @@ export default function AIDashboard() {
   }, [messages.length]);
 
   return (
-    <LayoutWrapper menuOpen={menuOpen}>
+    <LayoutWrapper>
       <header className="absolute top-4 left-4 z-50">
         <HamburgerMenu onToggle={(o: boolean) => setMenuOpen(o)} />
       </header>
@@ -443,7 +435,6 @@ export default function AIDashboard() {
             ref={chatRef}
             onScroll={handleScroll}
             className="flex-1 overflow-y-auto px-4 md:px-10 pt-20 pb-32 space-y-4 scroll-smooth"
-            data-tour-id="chatArea"
           >
             <div className="max-w-3xl mx-auto flex flex-col gap-4">
               {messages.map((msg, i) => {
@@ -454,7 +445,7 @@ export default function AIDashboard() {
                     ref={(el) => (messageRefs.current[i] = el)}
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
-                    <div className="flex flex-col max-w-[80%]" data-tour-id={msg.panel === "devices" ? "devicesPanel" : undefined}>
+                    <div className="flex flex-col max-w-[80%]">
                       {msg.content && (
                         <div
                           className={`px-4 py-3 rounded-2xl text-sm md:text-base shadow-sm ${
@@ -478,7 +469,7 @@ export default function AIDashboard() {
           </div>
         </main>
 
-        <div className="w-full px-4 z-40 pointer-events-none" data-tour-id="suggestionsCard">
+        <div className="w-full px-4 z-40 pointer-events-none">
           <div className="max-w-3xl mx-auto pointer-events-auto">
             <DynamicSuggestionCard
               suggestions={suggestions}
