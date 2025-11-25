@@ -13,8 +13,23 @@ import {
   FaPaperPlane,
 } from "react-icons/fa";
 
+// Define a proper Post type including optional fields
+type Comment = { id: number; author: string; text: string };
+type Post = {
+  id: number;
+  author: string;
+  content: string;
+  pinned: boolean;
+  likes: number;
+  liked: boolean;
+  comments: Comment[];
+  image?: string | null;
+  video?: string | null;
+  poll?: string[] | null;
+};
+
 export default function CommunityPanel() {
-  const [posts, setPosts] = useState([
+  const [posts, setPosts] = useState<Post[]>([
     {
       id: 1,
       author: "Estate Manager",
@@ -66,7 +81,7 @@ export default function CommunityPanel() {
 
   const makePost = () => {
     if (!newPost.trim() && !media.image && !media.video && !poll.some((p) => p.trim())) return;
-    const newItem = {
+    const newItem: Post = {
       id: Date.now(),
       author: "You",
       content: newPost,
