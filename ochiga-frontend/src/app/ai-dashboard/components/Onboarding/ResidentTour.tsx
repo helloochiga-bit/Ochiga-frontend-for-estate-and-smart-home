@@ -1,7 +1,6 @@
-// ochiga-frontend/src/app/components/ResidentTour.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 const tourSteps = [
   {
@@ -33,40 +32,16 @@ const tourSteps = [
 export default function ResidentTour() {
   const [currentStep, setCurrentStep] = useState(-1);
 
-  useEffect(() => {
-    const tourDone = localStorage.getItem("residentTourDone");
-    if (!tourDone) setCurrentStep(0);
-
-    const handleResize = () => updateSpotlight();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  useEffect(() => {
-    updateSpotlight();
-  }, [currentStep]);
-
-  const nextStep = () =>
-    setCurrentStep((prev) => {
-      if (prev + 1 >= tourSteps.length) {
-        localStorage.setItem("residentTourDone", "true");
-        return -1;
-      }
-      return prev + 1;
-    });
-  const previousStep = () => setCurrentStep((prev) => Math.max(prev - 1, 0));
-  const skipTour = () => {
-    localStorage.setItem("residentTourDone", "true");
-    setCurrentStep(-1);
-  };
-
-  const updateSpotlight = () => {
+  // Wrap updateSpotlight in useCallback to stabilize reference
+  const updateSpotlight = useCallback(() => {
     const step = tourSteps[currentStep];
     const spotlight = document.getElementById("spotlight");
     if (!spotlight || !step) return;
 
     if (step.spotlight) {
-      const element = document.querySelector(`[data-tour-id="${step.spotlight}"]`) as HTMLElement;
+      const element = document.querySelector(
+        `[data-tour-id="${step.spotlight}"]`
+      ) as HTMLElement;
       if (element) {
         const rect = element.getBoundingClientRect();
         spotlight.style.display = "block";
@@ -79,6 +54,38 @@ export default function ResidentTour() {
     } else {
       spotlight.style.display = "none";
     }
+  }, [currentStep]);
+
+  // Initialize tour
+  useEffect(() => {
+    const tourDone = localStorage.getItem("residentTourDone");
+    if (!tourDone) setCurrentStep(0);
+
+    const handleResize = () => updateSpotlight();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [updateSpotlight]);
+
+  // Update spotlight whenever currentStep changes
+  useEffect(() => {
+    updateSpotlight();
+  }, [currentStep, updateSpotlight]);
+
+  const nextStep = () =>
+    setCurrentStep((prev) => {
+      if (prev + 1 >= tourSteps.length) {
+        localStorage.setItem("residentTourDone", "true");
+        return -1;
+      }
+      return prev + 1;
+    });
+
+  const previousStep = () =>
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
+
+  const skipTour = () => {
+    localStorage.setItem("residentTourDone", "true");
+    setCurrentStep(-1);
   };
 
   if (currentStep === -1) return null;
@@ -118,8 +125,12 @@ export default function ResidentTour() {
           ></div>
         </div>
 
-        <h3 className="text-white font-bold text-lg mb-2">{tourSteps[currentStep].title}</h3>
-        <p className="text-white/80 text-sm mb-4">{tourSteps[currentStep].description}</p>
+        <h3 className="text-white font-bold text-lg mb-2">
+          {tourSteps[currentStep].title}
+        </h3>
+        <p className="text-white/80 text-sm mb-4">
+          {tourSteps[currentStep].description}
+        </p>
 
         <div className="flex justify-between items-center flex-wrap gap-2">
           <button className="text-white/70 text-xs" onClick={skipTour}>
@@ -137,7 +148,9 @@ export default function ResidentTour() {
               className="text-xs bg-gradient-to-r from-maroon to-red-500 text-white rounded-lg px-4 py-2 font-semibold shadow"
               onClick={nextStep}
             >
-              {currentStep === tourSteps.length - 1 ? "Get Started! 🚀" : "Next →"}
+              {currentStep === tourSteps.length - 1
+                ? "Get Started! 🚀"
+                : "Next →"}
             </button>
           </div>
         </div>
