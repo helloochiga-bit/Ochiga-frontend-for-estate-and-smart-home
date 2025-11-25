@@ -1,24 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, FC } from "react";
 import { FiMenu, FiX, FiSearch, FiChevronDown, FiChevronUp, FiLogOut } from "react-icons/fi";
 import { MdOutlinePerson, MdSettings } from "react-icons/md";
 import { useRouter } from "next/navigation";
-import useAuth from "@/hooks/useAuth"; 
-import SlideUpEstateSettings from "./SlideUpEstateSettings"; // <-- new import
+import useAuth from "@/hooks/useAuth";
+import SlideUpEstateSettings from "./SlideUpEstateSettings";
 
-export default function EstateHamburgerMenu() {
+interface HamburgerMenuProps {
+  onToggle?: (open: boolean) => void; // <-- add prop
+}
+
+const EstateHamburgerMenu: FC<HamburgerMenuProps> = ({ onToggle }) => {
   const router = useRouter();
-  const { user } = useAuth(); 
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [showSettings, setShowSettings] = useState(false); // <-- new state
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     if (open) document.body.classList.add("sidebar-open");
     else document.body.classList.remove("sidebar-open");
-  }, [open]);
+    if (onToggle) onToggle(open); // <-- trigger parent callback
+  }, [open, onToggle]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -39,9 +44,7 @@ export default function EstateHamburgerMenu() {
     router.push("/auth");
   };
 
-  const initials = user?.username
-    ? user.username.slice(0, 1).toUpperCase()
-    : "E";
+  const initials = user?.username ? user.username[0].toUpperCase() : "E";
 
   return (
     <>
@@ -121,7 +124,7 @@ export default function EstateHamburgerMenu() {
               </button>
 
               <button
-                onClick={() => setShowSettings(true)} // <-- open SlideUpEstateSettings
+                onClick={() => setShowSettings(true)}
                 className="w-full flex items-center gap-3 px-4 py-3 text-white/90 hover:bg-gray-800 transition"
               >
                 <MdSettings size={18} /> Settings
@@ -183,4 +186,6 @@ export default function EstateHamburgerMenu() {
       />
     </>
   );
-}
+};
+
+export default EstateHamburgerMenu;
