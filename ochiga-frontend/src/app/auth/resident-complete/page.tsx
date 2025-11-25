@@ -9,7 +9,8 @@ export default function ResidentActivationPage() {
   const router = useRouter();
   const params = useSearchParams();
 
-  const token = params.get("token") || null;
+  // ✅ Use optional chaining to prevent TypeScript error
+  const token = params?.get("token") ?? null;
 
   const [tokenValid, setTokenValid] = useState<boolean | null>(null);
   const [username, setUsername] = useState("");
@@ -30,7 +31,10 @@ export default function ResidentActivationPage() {
     const validateToken = async () => {
       try {
         const res = await fetch(`${BACKEND_URL}/auth/onboard/validate/${token}`);
-        if (!res.ok) return setTokenValid(false);
+        if (!res.ok) {
+          setTokenValid(false);
+          return;
+        }
 
         setTokenValid(true);
       } catch {
