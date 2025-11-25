@@ -1,4 +1,3 @@
-// ochiga-frontend/src/app/ai-dashboard/components/Panels/IRSensorPanel.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -25,7 +24,13 @@ export default function IRSensorPanel() {
   };
 
   useEffect(() => {
-    fetchDevices();
+    // Wrap async logic in a nested function
+    const init = async () => {
+      await fetchDevices();
+    };
+    init();
+
+    // Subscribe to database changes
     const subscription = supabase
       .channel("public:ir_devices")
       .on(
@@ -34,13 +39,25 @@ export default function IRSensorPanel() {
         () => fetchDevices()
       )
       .subscribe();
-    return () => supabase.removeChannel(subscription);
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(subscription);
+    };
   }, []);
 
   const toggleDevice = async (device: IRDevice) => {
     const newStatus = device.status === "on" ? "off" : "on";
-    await supabase.from("ir_devices").update({ status: newStatus }).eq("id", device.id);
-    setDevices((prev) => prev.map((d) => (d.id === device.id ? { ...d, status: newStatus } : d)));
+    const { error } = await supabase
+      .from("ir_devices")
+      .update({ status: newStatus })
+      .eq("id", device.id);
+
+    if (error) console.error(error);
+    else
+      setDevices((prev) =>
+        prev.map((d) => (d.id === device.id ? { ...d, status: newStatus } : d))
+      );
   };
 
   return (
