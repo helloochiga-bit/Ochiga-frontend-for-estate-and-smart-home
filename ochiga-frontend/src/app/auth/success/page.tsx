@@ -3,14 +3,16 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
-export default function SuccessPage(){
+export default function SuccessPage() {
   const params = useSearchParams();
   const router = useRouter();
-  const name = params.get("name");
 
-  useEffect(()=> {
-    const t = setTimeout(()=> router.push("/auth"), 2500);
-    return ()=> clearTimeout(t);
+  // ✅ Safe access to query param
+  const name = params?.get("name") ?? null;
+
+  useEffect(() => {
+    const t = setTimeout(() => router.push("/auth"), 2500);
+    return () => clearTimeout(t);
   }, [router]);
 
   return (
