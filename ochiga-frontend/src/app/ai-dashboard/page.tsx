@@ -41,6 +41,16 @@ import { FaArrowDown } from "react-icons/fa";
 import { aiService } from "./services/aiService";
 import { deviceService } from "./services/deviceService";
 
+/* ---------------------------------------------
+   🔧 FIX: Add Suggestion type for TS correctness
+--------------------------------------------- */
+type Suggestion = {
+  id: string;
+  title: string;
+  subtitle?: string;
+  payload?: string;
+};
+
 type ChatMessage = {
   id: string;
   role: "user" | "assistant";
@@ -64,8 +74,12 @@ export default function AIDashboard() {
   ]);
 
   const [activePanel, setActivePanel] = useState<string | null>(null);
+
+  /* 🔧 FIX: Correct menuOpen type + passing to wrapper */
   const [menuOpen, setMenuOpen] = useState(false);
+
   const { listening, startListening, stopListening } = useSpeechRecognition(handleSend);
+
   const chatRef = useRef<HTMLDivElement | null>(null);
   const [showScrollDown, setShowScrollDown] = useState(false);
   const [discoveredDevices, setDiscoveredDevices] = useState<any[]>([]);
@@ -79,6 +93,7 @@ export default function AIDashboard() {
     return scrollTop + clientHeight >= scrollHeight - 100;
   };
 
+  /* ----- scroll detection ----- */
   useEffect(() => {
     if (!chatRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = chatRef.current;
@@ -101,6 +116,7 @@ export default function AIDashboard() {
 
   const handleMicClick = () => (listening ? stopListening() : startListening());
 
+  /* ----- panel movement ----- */
   const movePanelBlockToBottom = (panelTag: string) => {
     setMessages((prev) => {
       const grouped = prev.filter((m) => m.panelTag === panelTag);
@@ -158,67 +174,41 @@ export default function AIDashboard() {
     }, 120);
   };
 
+  /* ---------- DEVICE ACTION HANDLING ----------- */
   const handleAction = (
     actions: Array<{ type: string; action: string; target: string }>,
     userMessage?: string
   ) => {
     actions.forEach((a) => {
-      let reply = "Hmm… I didn’t quite get that. Can you try rephrasing?";
+      let reply = "Hmm… I didn’t quite get that. Try rephrasing.";
       let panel: string | null = null;
 
       if (a.type === "device") {
         switch (a.target) {
-          case "light":
-            reply = a.action === "turn_on" ? "Turning on your lights." : "Turning off your lights.";
-            panel = "lights";
-            break;
-          case "ac":
-            reply = a.action === "turn_on" ? "Switching on the AC." : "Turning off the AC.";
-            panel = "ac_panel";
-            break;
-          case "tv":
-            reply = a.action === "turn_on" ? "Turning on the TV." : "Turning off the TV.";
-            panel = "tv_panel";
-            break;
-          case "camera":
-            reply = "Accessing your CCTV cameras.";
-            panel = "cctv";
-            break;
-          case "smart_meter":
-            reply = "Here’s your electricity meter reading.";
-            panel = "smart_meter";
-            break;
-          case "ir_sensor":
-            reply = "Opening IR device control panel.";
-            panel = "ir_sensor";
-            break;
-          case "sensors":
-            reply = "Showing all sensor data in your home.";
-            panel = "sensors";
-            break;
-          case "devices":
-            reply = "Let’s scan for nearby devices…";
-            panel = "devices";
-            break;
-          case "door":
-            reply = "Opening the door now.";
-            panel = null;
-            break;
+          case "light": reply = a.action === "turn_on" ? "Turning on your lights." : "Turning off your lights."; panel = "lights"; break;
+          case "ac": reply = a.action === "turn_on" ? "Switching on the AC." : "Turning off the AC."; panel = "ac_panel"; break;
+          case "tv": reply = a.action === "turn_on" ? "Turning on the TV." : "Turning off the TV."; panel = "tv_panel"; break;
+          case "camera": reply = "Accessing CCTV cameras."; panel = "cctv"; break;
+          case "smart_meter": reply = "Here’s your meter reading."; panel = "smart_meter"; break;
+          case "ir_sensor": reply = "Opening IR devices."; panel = "ir_sensor"; break;
+          case "sensors": reply = "Showing sensors."; panel = "sensors"; break;
+          case "devices": reply = "Scanning for devices…"; panel = "devices"; break;
+          case "door": reply = "Opening your door."; panel = null; break;
         }
       }
 
       if (a.type === "schedule" && a.target === "visitor") {
-        reply = "Got it. What time should your visitor arrive?";
+        reply = "Okay — what time should the visitor arrive?";
         panel = "visitors";
       }
 
       if (a.type === "info" && a.target === "status") {
-        reply = "Everything looks good — your home is secure, power stable, and network strong.";
+        reply = "Status is good — home is secure, power stable.";
         panel = null;
       }
 
       if (a.type === "system" && a.target === "assistant") {
-        reply = "Okay, Ochiga Assistant signing off for now.";
+        reply = "Okay, turning off Ochiga Assistant.";
         panel = null;
       }
 
@@ -233,8 +223,8 @@ export default function AIDashboard() {
 
         if (panel === "devices") {
           (async () => {
-            const estateId = typeof window !== "undefined" ? localStorage.getItem("ochiga_estate") : undefined;
-            const devices = await deviceService.getDevices(estateId ?? undefined);
+            const estateId = localStorage.getItem("ochiga_estate") ?? undefined;
+            const devices = await deviceService.getDevices(estateId);
             setDiscoveredDevices(devices || []);
           })();
         }
@@ -260,16 +250,12 @@ export default function AIDashboard() {
         };
 
         setMessages((prev) => [...prev, userMsg, assistantMsg]);
-        setTimeout(() => {
-          if (isAtBottom()) scrollToBottom();
-          else setShowScrollDown(true);
-        }, 120);
-
         speak(reply);
       }
     });
   };
 
+  /* ---------- HANDLE SEND ----------- */
   async function handleSend(text?: string, spoken = false) {
     const messageText = (text ?? input).trim();
     if (!messageText) return;
@@ -279,7 +265,7 @@ export default function AIDashboard() {
     const actions: Array<{ type: string; action: string; target: string }> = [];
     const lower = messageText.toLowerCase();
 
-    // DEVICE COMMANDS
+    // DEVICE LOGIC
     if (lower.includes("turn on") && lower.includes("ac")) actions.push({ type: "device", action: "turn_on", target: "ac" });
     if (lower.includes("turn off") && lower.includes("ac")) actions.push({ type: "device", action: "turn_off", target: "ac" });
 
@@ -291,17 +277,19 @@ export default function AIDashboard() {
 
     if (lower.includes("camera") || lower.includes("cctv")) actions.push({ type: "device", action: "turn_on", target: "camera" });
     if (lower.includes("door")) actions.push({ type: "device", action: "open", target: "door" });
+
     if (lower.includes("visitor")) actions.push({ type: "schedule", action: "create", target: "visitor" });
     if (lower.includes("status")) actions.push({ type: "info", action: "query", target: "status" });
+
     if (lower.includes("shut down") || lower.includes("sleep") || lower.includes("assistant off"))
       actions.push({ type: "system", action: "shutdown", target: "assistant" });
 
-    // SMART HOME PANELS
-    if (lower.includes("meter") || lower.includes("electricity")) actions.push({ type: "device", action: "view", target: "smart_meter" });
+    // SMART PANELS
+    if (lower.includes("meter")) actions.push({ type: "device", action: "view", target: "smart_meter" });
     if (lower.includes("ir")) actions.push({ type: "device", action: "view", target: "ir_sensor" });
-    if (lower.includes("sensor") || lower.includes("motion") || lower.includes("air")) actions.push({ type: "device", action: "view", target: "sensors" });
+    if (lower.includes("sensor")) actions.push({ type: "device", action: "view", target: "sensors" });
 
-    if (lower.includes("connect device") || lower.includes("add device") || lower.includes("scan") || lower.includes("discover") || lower.includes("pair"))
+    if (lower.includes("connect") || lower.includes("add") || lower.includes("discover") || lower.includes("scan"))
       actions.push({ type: "device", action: "discover", target: "devices" });
 
     if (actions.length) {
@@ -310,6 +298,7 @@ export default function AIDashboard() {
     }
 
     const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
     const userMsg: ChatMessage = {
       id: createId(),
       role: "user",
@@ -322,15 +311,15 @@ export default function AIDashboard() {
 
     try {
       const aiResp = await aiService.chat(messageText);
-      const replyText = aiResp.reply || `Alright, I’ve processed: "${messageText}".`;
+      const replyText = aiResp.reply || `Okay — processed: "${messageText}".`;
       const panelFromAI = aiResp.panel ?? panel ?? null;
 
       const replyMsg: ChatMessage = {
         id: createId(),
         role: "assistant",
         content: replyText,
-        panel: panelFromAI ?? null,
-        panelTag: panelFromAI ?? null,
+        panel: panelFromAI,
+        panelTag: panelFromAI,
         time: now,
       };
 
@@ -342,8 +331,8 @@ export default function AIDashboard() {
         setActivePanel(panelFromAI);
 
         if (panelFromAI === "devices") {
-          const estateId = typeof window !== "undefined" ? localStorage.getItem("ochiga_estate") : undefined;
-          const devices = await deviceService.getDevices(estateId ?? undefined);
+          const estateId = localStorage.getItem("ochiga_estate") ?? undefined;
+          const devices = await deviceService.getDevices(estateId);
           setDiscoveredDevices(devices || []);
         }
       } else {
@@ -352,7 +341,7 @@ export default function AIDashboard() {
 
       if (spoken) speak(replyText);
     } catch (err) {
-      console.error("AI error", err);
+      console.error(err);
       const fallback: ChatMessage = {
         id: createId(),
         role: "assistant",
@@ -370,20 +359,24 @@ export default function AIDashboard() {
     }, 120);
   }
 
-  const suggestions = [
-    "Turn on living room lights",
-    "Turn on AC",
-    "Turn on TV",
-    "Fund my wallet",
-    "View CCTV feed",
-    "Check device status",
-    "Lock all doors",
-    "Connect new device",
-    "Load electricity meter",
-    "Check IR devices",
-    "View sensors"
+  /* --------------------------------------
+     🔧 FIX: Convert suggestions into objects
+  -------------------------------------- */
+  const suggestions: Suggestion[] = [
+    { id: "1", title: "Turn on living room lights" },
+    { id: "2", title: "Turn on AC" },
+    { id: "3", title: "Turn on TV" },
+    { id: "4", title: "Fund my wallet" },
+    { id: "5", title: "View CCTV feed" },
+    { id: "6", title: "Check device status" },
+    { id: "7", title: "Lock all doors" },
+    { id: "8", title: "Connect new device" },
+    { id: "9", title: "Load electricity meter" },
+    { id: "10", title: "Check IR devices" },
+    { id: "11", title: "View sensors" }
   ];
 
+  /* -------- PANEL RENDERER -------- */
   const renderPanel = (panel: string | null | undefined) => {
     switch (panel) {
       case "lights": return <LightControl />;
@@ -412,12 +405,15 @@ export default function AIDashboard() {
     }
   };
 
+  /* -------- AUTO SCROLL -------- */
   useEffect(() => {
     if (isAtBottom()) scrollToBottom("auto");
   }, [messages.length]);
 
   return (
     <LayoutWrapper menuOpen={menuOpen}>
+      
+      {/* 🔧 FIX: HamburgerMenu props now correct */}
       <header className="absolute top-4 left-4 z-50">
         <HamburgerMenu isOpen={menuOpen} onToggle={(o: boolean) => setMenuOpen(o)} />
       </header>
@@ -432,43 +428,47 @@ export default function AIDashboard() {
           }}
         >
           <div
-            ref={(el) => { messageRefs.current[0] = el; }}
+            ref={chatRef}
             onScroll={handleScroll}
             className="flex-1 overflow-y-auto px-4 md:px-10 pt-20 pb-32 space-y-4 scroll-smooth"
           >
             <div className="max-w-3xl mx-auto flex flex-col gap-4">
-              {messages.map((msg, i) => {
-                const isPanelBlock = Boolean(msg.panel);
-                return (
-                  <div
-                    key={msg.id}
-                    ref={(el) => { messageRefs.current[i] = el; }}
-                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div className="flex flex-col max-w-[80%]">
-                      {msg.content && (
-                        <div
-                          className={`px-4 py-3 rounded-2xl text-sm md:text-base shadow-sm ${
-                            msg.role === "user"
-                              ? "bg-blue-600 text-white rounded-br-none"
-                              : "bg-gray-900 text-gray-100 border border-gray-700 rounded-bl-none"
-                          }`}
-                        >
-                          {msg.content}
-                          {msg.role === "user" && (
-                            <span className="text-[10px] text-gray-300 ml-2">{msg.time}</span>
-                          )}
-                        </div>
-                      )}
-                      {isPanelBlock && <div className="mt-1 w-full">{renderPanel(msg.panel)}</div>}
-                    </div>
+
+              {messages.map((msg, i) => (
+                <div
+                  key={msg.id}
+                  ref={(el) => (messageRefs.current[i] = el)}
+                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                >
+                  <div className="flex flex-col max-w-[80%]">
+
+                    {/* Message bubble */}
+                    {msg.content && (
+                      <div
+                        className={`px-4 py-3 rounded-2xl text-sm md:text-base shadow-sm ${
+                          msg.role === "user"
+                            ? "bg-blue-600 text-white rounded-br-none"
+                            : "bg-gray-900 text-gray-100 border border-gray-700 rounded-bl-none"
+                        }`}
+                      >
+                        {msg.content}
+                      </div>
+                    )}
+
+                    {/* Panel */}
+                    {msg.panel && (
+                      <div className="mt-1 w-full">{renderPanel(msg.panel)}</div>
+                    )}
+
                   </div>
-                );
-              })}
+                </div>
+              ))}
+
             </div>
           </div>
         </main>
 
+        {/* Suggestions */}
         <div className="w-full px-4 z-40 pointer-events-none">
           <div className="max-w-3xl mx-auto pointer-events-auto">
             <DynamicSuggestionCard
@@ -479,6 +479,7 @@ export default function AIDashboard() {
           </div>
         </div>
 
+        {/* Chat footer */}
         <div className="w-full px-4 py-2 bg-gray-900 border-t border-gray-700 flex justify-center items-center z-50">
           <ChatFooter
             input={input}
