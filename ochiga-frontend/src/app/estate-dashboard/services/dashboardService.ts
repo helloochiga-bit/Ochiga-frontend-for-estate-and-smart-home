@@ -96,7 +96,11 @@ export const residentsAPI = {
 
   remove: async (id: string) =>
     handle(
-      supabase.from("users").delete().eq("id", id).throwOnError()
+      supabase
+        .from("users")
+        .delete()
+        .eq("id", id)
+        .throwOnError()
     ),
 };
 
@@ -115,7 +119,7 @@ export const devicesAPI = {
     ),
 
   toggle: async (id: string, status: string) =>
-    handle(
+    handle<Device>(
       supabase
         .from("devices")
         .update({ status })
@@ -126,7 +130,13 @@ export const devicesAPI = {
     ),
 
   remove: async (id: string) =>
-    handle(supabase.from("devices").delete().eq("id", id).throwOnError()),
+    handle(
+      supabase
+        .from("devices")
+        .delete()
+        .eq("id", id)
+        .throwOnError()
+    ),
 };
 
 // -------------------------------
@@ -135,7 +145,12 @@ export const devicesAPI = {
 export const estateAPI = {
   get: async (estate_id: string) =>
     handle<Estate>(
-      supabase.from("estates").select("*").eq("id", estate_id).single().throwOnError()
+      supabase
+        .from("estates")
+        .select("*")
+        .eq("id", estate_id)
+        .single()
+        .throwOnError()
     ),
 };
 
