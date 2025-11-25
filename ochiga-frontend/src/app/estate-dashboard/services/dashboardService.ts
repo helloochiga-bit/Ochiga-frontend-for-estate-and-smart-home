@@ -119,7 +119,7 @@ export const devicesAPI = {
     ),
 
   toggle: async (id: string, status: string) =>
-    handle<Device>(
+    handle(
       supabase
         .from("devices")
         .update({ status })
