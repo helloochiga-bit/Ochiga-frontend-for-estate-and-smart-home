@@ -7,7 +7,11 @@ import { useRouter } from "next/navigation";
 import useAuth from "@/hooks/useAuth";
 import SlideUpSettings from "./SlideUpSettings"; // import the slide-up component
 
-export default function AIDashboardHamburgerMenu() {
+interface HamburgerMenuProps {
+  onToggle?: (open: boolean) => void; // ✅ add optional onToggle prop
+}
+
+export default function HamburgerMenu({ onToggle }: HamburgerMenuProps) {
   const router = useRouter();
   const { user } = useAuth(); // dynamic user
   const [open, setOpen] = useState(false);
@@ -39,20 +43,20 @@ export default function AIDashboardHamburgerMenu() {
     router.push("/auth");
   };
 
-  // initials
-  const initials = user?.username
-    ? user.username.slice(0, 1).toUpperCase()
-    : "A";
+  const initials = user?.username ? user.username.slice(0, 1).toUpperCase() : "A";
+
+  const toggleMenu = () => {
+    setOpen(!open);
+    if (open) setProfileOpen(false);
+    onToggle?.(!open); // ✅ call onToggle when menu opens/closes
+  };
 
   return (
     <>
       {/* TOP HEADER */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-transparent px-4 py-3 flex items-center gap-3">
         <button
-          onClick={() => {
-            setOpen(!open);
-            if (open) setProfileOpen(false);
-          }}
+          onClick={toggleMenu}
           className="p-2 rounded-md bg-gray-800/60 hover:bg-gray-800 text-white transition"
         >
           {open ? <FiX className="text-xl" /> : <FiMenu className="text-xl" />}
@@ -139,6 +143,7 @@ export default function AIDashboardHamburgerMenu() {
           onClick={() => {
             setOpen(false);
             setProfileOpen(false);
+            onToggle?.(false); // ✅ notify parent on outside click
           }}
         />
       )}
