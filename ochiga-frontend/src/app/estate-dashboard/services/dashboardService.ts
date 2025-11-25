@@ -10,15 +10,6 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // -------------------------------
-// GENERIC WRAPPER
-// -------------------------------
-async function handle<T>(promise: Promise<any>): Promise<T> {
-  const { data, error } = await promise;
-  if (error) throw new Error(error.message);
-  return data as T;
-}
-
-// -------------------------------
 // TYPES
 // -------------------------------
 export type Resident = {
@@ -74,127 +65,125 @@ export type Alert = {
 // RESIDENTS MODULE
 // -------------------------------
 export const residentsAPI = {
-  list: async (estate_id: string) =>
-    handle<Resident[]>(
-      supabase
-        .from("users")
-        .select("*")
-        .eq("estate_id", estate_id)
-        .order("created_at", { ascending: false })
-        .throwOnError()
-    ),
+  list: async (estate_id: string): Promise<Resident[]> => {
+    const { data } = await supabase
+      .from("users")
+      .select("*")
+      .eq("estate_id", estate_id)
+      .order("created_at", { ascending: false })
+      .throwOnError();
+    return data;
+  },
 
-  invite: async (email: string, estate_id: string) =>
-    handle<Resident>(
-      supabase
-        .from("users")
-        .insert([{ email, estate_id, role: "resident" }])
-        .select()
-        .single()
-        .throwOnError()
-    ),
+  invite: async (email: string, estate_id: string): Promise<Resident> => {
+    const { data } = await supabase
+      .from("users")
+      .insert([{ email, estate_id, role: "resident" }])
+      .select()
+      .single()
+      .throwOnError();
+    return data;
+  },
 
-  remove: async (id: string) =>
-    handle(
-      supabase
-        .from("users")
-        .delete()
-        .eq("id", id)
-        .throwOnError()
-    ),
+  remove: async (id: string): Promise<void> => {
+    await supabase
+      .from("users")
+      .delete()
+      .eq("id", id)
+      .throwOnError();
+  },
 };
 
 // -------------------------------
 // DEVICES MODULE
 // -------------------------------
 export const devicesAPI = {
-  list: async (estate_id: string) =>
-    handle<Device[]>(
-      supabase
-        .from("devices")
-        .select("*")
-        .eq("estate_id", estate_id)
-        .order("created_at", { ascending: false })
-        .throwOnError()
-    ),
+  list: async (estate_id: string): Promise<Device[]> => {
+    const { data } = await supabase
+      .from("devices")
+      .select("*")
+      .eq("estate_id", estate_id)
+      .order("created_at", { ascending: false })
+      .throwOnError();
+    return data;
+  },
 
-  toggle: async (id: string, status: string) =>
-    handle(
-      supabase
-        .from("devices")
-        .update({ status })
-        .eq("id", id)
-        .select()
-        .single()
-        .throwOnError()
-    ),
+  toggle: async (id: string, status: string): Promise<Device> => {
+    const { data } = await supabase
+      .from("devices")
+      .update({ status })
+      .eq("id", id)
+      .select()
+      .single()
+      .throwOnError();
+    return data;
+  },
 
-  remove: async (id: string) =>
-    handle(
-      supabase
-        .from("devices")
-        .delete()
-        .eq("id", id)
-        .throwOnError()
-    ),
+  remove: async (id: string): Promise<void> => {
+    await supabase
+      .from("devices")
+      .delete()
+      .eq("id", id)
+      .throwOnError();
+  },
 };
 
 // -------------------------------
 // ESTATE MODULE
 // -------------------------------
 export const estateAPI = {
-  get: async (estate_id: string) =>
-    handle<Estate>(
-      supabase
-        .from("estates")
-        .select("*")
-        .eq("id", estate_id)
-        .single()
-        .throwOnError()
-    ),
+  get: async (estate_id: string): Promise<Estate> => {
+    const { data } = await supabase
+      .from("estates")
+      .select("*")
+      .eq("id", estate_id)
+      .single()
+      .throwOnError();
+    return data;
+  },
 };
 
 // -------------------------------
 // HOMES MODULE
 // -------------------------------
 export const homesAPI = {
-  list: async (estate_id: string) =>
-    handle<Home[]>(
-      supabase
-        .from("homes")
-        .select("*")
-        .eq("estate_id", estate_id)
-        .order("created_at", { ascending: false })
-        .throwOnError()
-    ),
+  list: async (estate_id: string): Promise<Home[]> => {
+    const { data } = await supabase
+      .from("homes")
+      .select("*")
+      .eq("estate_id", estate_id)
+      .order("created_at", { ascending: false })
+      .throwOnError();
+    return data;
+  },
 };
 
 // -------------------------------
 // ACTIVITY LOGS
 // -------------------------------
 export const logsAPI = {
-  list: async (estate_id: string) =>
-    handle<ActivityLog[]>(
-      supabase
-        .from("activity_logs")
-        .select("*")
-        .eq("estate_id", estate_id)
-        .order("created_at", { ascending: false })
-        .throwOnError()
-    ),
+  list: async (estate_id: string): Promise<ActivityLog[]> => {
+    const { data } = await supabase
+      .from("activity_logs")
+      .select("*")
+      .eq("estate_id", estate_id)
+      .order("created_at", { ascending: false })
+      .throwOnError();
+    return data;
+  },
 };
 
 // -------------------------------
 // ALERTS / SECURITY
 // -------------------------------
 export const alertAPI = {
-  list: async (estate_id: string) =>
-    handle<Alert[]>(
-      supabase
-        .from("alerts")
-        .select("*")
-        .eq("estate_id", estate_id)
-        .order("created_at", { ascending: false })
-        .throwOnError()
-    ),
+  list: async (estate_id: string): Promise<Alert[]> => {
+    const { data } = await supabase
+      .from("alerts")
+      .select("*")
+      .eq("estate_id", estate_id)
+      .order("created_at", { ascending: false })
+      .throwOnError();
+    return data;
+  },
 };
