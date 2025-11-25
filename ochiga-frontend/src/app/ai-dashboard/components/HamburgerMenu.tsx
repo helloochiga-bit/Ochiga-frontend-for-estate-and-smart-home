@@ -5,25 +5,33 @@ import { FiMenu, FiX, FiChevronDown, FiChevronUp, FiLogOut } from "react-icons/f
 import { MdOutlinePerson, MdSettings } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import useAuth from "@/hooks/useAuth";
-import SlideUpSettings from "./SlideUpSettings"; // import the slide-up component
+import SlideUpSettings from "./SlideUpSettings";
 
 interface HamburgerMenuProps {
-  onToggle?: (open: boolean) => void; // ✅ add optional onToggle prop
+  isOpen?: boolean; // parent can control initial state
+  onToggle?: (open: boolean) => void; // callback to notify parent
 }
 
-export default function HamburgerMenu({ onToggle }: HamburgerMenuProps) {
+export default function HamburgerMenu({ isOpen = false, onToggle }: HamburgerMenuProps) {
   const router = useRouter();
-  const { user } = useAuth(); // dynamic user
-  const [open, setOpen] = useState(false);
+  const { user } = useAuth();
+  const [open, setOpen] = useState(isOpen);
   const [profileOpen, setProfileOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [showSettings, setShowSettings] = useState(false); // new state for slide-up settings
+  const [showSettings, setShowSettings] = useState(false);
 
+  // sync with parent prop
+  useEffect(() => {
+    setOpen(isOpen);
+  }, [isOpen]);
+
+  // toggle sidebar class
   useEffect(() => {
     if (open) document.body.classList.add("sidebar-open");
     else document.body.classList.remove("sidebar-open");
   }, [open]);
 
+  // close everything on Escape
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -31,11 +39,12 @@ export default function HamburgerMenu({ onToggle }: HamburgerMenuProps) {
         setProfileOpen(false);
         setShowLogoutConfirm(false);
         setShowSettings(false);
+        onToggle?.(false);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [onToggle]);
 
   const handleLogout = () => {
     document.cookie = "ochiga_estate_auth=; Max-Age=0; path=/";
@@ -43,12 +52,12 @@ export default function HamburgerMenu({ onToggle }: HamburgerMenuProps) {
     router.push("/auth");
   };
 
-  const initials = user?.username ? user.username.slice(0, 1).toUpperCase() : "A";
+  const initials = user?.username ? user.username[0].toUpperCase() : "A";
 
   const toggleMenu = () => {
     setOpen(!open);
     if (open) setProfileOpen(false);
-    onToggle?.(!open); // ✅ call onToggle when menu opens/closes
+    onToggle?.(!open);
   };
 
   return (
@@ -95,12 +104,8 @@ export default function HamburgerMenu({ onToggle }: HamburgerMenuProps) {
                 {initials}
               </div>
               <div className="text-left">
-                <p className="text-white font-semibold text-sm">
-                  {user?.username || "AI User"}
-                </p>
-                <p className="text-white/50 text-xs">
-                  {user?.email || "View profile"}
-                </p>
+                <p className="text-white font-semibold text-sm">{user?.username || "AI User"}</p>
+                <p className="text-white/50 text-xs">{user?.email || "View profile"}</p>
               </div>
             </button>
 
@@ -120,6 +125,7 @@ export default function HamburgerMenu({ onToggle }: HamburgerMenuProps) {
                   setShowSettings(true);
                   setOpen(false);
                   setProfileOpen(false);
+                  onToggle?.(false);
                 }}
                 className="w-full flex items-center gap-3 px-4 py-3 text-white/90 hover:bg-gray-800 transition"
               >
@@ -143,16 +149,13 @@ export default function HamburgerMenu({ onToggle }: HamburgerMenuProps) {
           onClick={() => {
             setOpen(false);
             setProfileOpen(false);
-            onToggle?.(false); // ✅ notify parent on outside click
+            onToggle?.(false);
           }}
         />
       )}
 
-      {/* SLIDE-UP SETTINGS COMPONENT */}
-      <SlideUpSettings
-        isOpen={showSettings}
-        onClose={() => setShowSettings(false)}
-      />
+      {/* SLIDE-UP SETTINGS */}
+      <SlideUpSettings isOpen={showSettings} onClose={() => setShowSettings(false)} />
 
       {/* LOGOUT MODAL */}
       {showLogoutConfirm && (
