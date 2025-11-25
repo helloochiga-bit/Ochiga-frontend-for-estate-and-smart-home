@@ -81,7 +81,7 @@ export const residentsAPI = {
         .select("*")
         .eq("estate_id", estate_id)
         .order("created_at", { ascending: false })
-        .then(res => res)
+        .throwOnError()
     ),
 
   invite: async (email: string, estate_id: string) =>
@@ -91,7 +91,7 @@ export const residentsAPI = {
         .insert([{ email, estate_id, role: "resident" }])
         .select()
         .single()
-        .then(res => res)
+        .throwOnError()
     ),
 
   remove: async (id: string) =>
@@ -100,7 +100,7 @@ export const residentsAPI = {
         .from("users")
         .delete()
         .eq("id", id)
-        .then(res => res)
+        .throwOnError()
     ),
 };
 
@@ -115,7 +115,7 @@ export const devicesAPI = {
         .select("*")
         .eq("estate_id", estate_id)
         .order("created_at", { ascending: false })
-        .then(res => res)
+        .throwOnError()
     ),
 
   toggle: async (id: string, status: string) =>
@@ -126,7 +126,7 @@ export const devicesAPI = {
         .eq("id", id)
         .select()
         .single()
-        .then(res => res)
+        .throwOnError()
     ),
 
   remove: async (id: string) =>
@@ -135,7 +135,7 @@ export const devicesAPI = {
         .from("devices")
         .delete()
         .eq("id", id)
-        .then(res => res)
+        .throwOnError()
     ),
 };
 
@@ -150,7 +150,7 @@ export const estateAPI = {
         .select("*")
         .eq("id", estate_id)
         .single()
-        .then(res => res)
+        .throwOnError()
     ),
 };
 
@@ -165,7 +165,7 @@ export const homesAPI = {
         .select("*")
         .eq("estate_id", estate_id)
         .order("created_at", { ascending: false })
-        .then(res => res)
+        .throwOnError()
     ),
 };
 
@@ -180,7 +180,7 @@ export const logsAPI = {
         .select("*")
         .eq("estate_id", estate_id)
         .order("created_at", { ascending: false })
-        .then(res => res)
+        .throwOnError()
     ),
 };
 
@@ -195,6 +195,6 @@ export const alertAPI = {
         .select("*")
         .eq("estate_id", estate_id)
         .order("created_at", { ascending: false })
-        .then(res => res)
+        .throwOnError()
     ),
 };
