@@ -2,12 +2,10 @@
 
 let googleMapsLoading: Promise<void> | null = null;
 
-// Extend the Window interface to include 'google'
+// ✅ Declare window.google properly with @types/google.maps
 declare global {
   interface Window {
-    google?: {
-      maps?: typeof google.maps;
-    };
+    google?: typeof google;
   }
 }
 
