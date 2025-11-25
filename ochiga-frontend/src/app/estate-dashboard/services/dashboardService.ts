@@ -81,6 +81,7 @@ export const residentsAPI = {
         .select("*")
         .eq("estate_id", estate_id)
         .order("created_at", { ascending: false })
+        .throwOnError()
     ),
 
   invite: async (email: string, estate_id: string) =>
@@ -90,10 +91,13 @@ export const residentsAPI = {
         .insert([{ email, estate_id, role: "resident" }])
         .select()
         .single()
+        .throwOnError()
     ),
 
   remove: async (id: string) =>
-    handle(supabase.from("users").delete().eq("id", id)),
+    handle(
+      supabase.from("users").delete().eq("id", id).throwOnError()
+    ),
 };
 
 // -------------------------------
@@ -107,6 +111,7 @@ export const devicesAPI = {
         .select("*")
         .eq("estate_id", estate_id)
         .order("created_at", { ascending: false })
+        .throwOnError()
     ),
 
   toggle: async (id: string, status: string) =>
@@ -117,10 +122,11 @@ export const devicesAPI = {
         .eq("id", id)
         .select()
         .single()
+        .throwOnError()
     ),
 
   remove: async (id: string) =>
-    handle(supabase.from("devices").delete().eq("id", id)),
+    handle(supabase.from("devices").delete().eq("id", id).throwOnError()),
 };
 
 // -------------------------------
@@ -129,7 +135,7 @@ export const devicesAPI = {
 export const estateAPI = {
   get: async (estate_id: string) =>
     handle<Estate>(
-      supabase.from("estates").select("*").eq("id", estate_id).single()
+      supabase.from("estates").select("*").eq("id", estate_id).single().throwOnError()
     ),
 };
 
@@ -144,6 +150,7 @@ export const homesAPI = {
         .select("*")
         .eq("estate_id", estate_id)
         .order("created_at", { ascending: false })
+        .throwOnError()
     ),
 };
 
@@ -158,6 +165,7 @@ export const logsAPI = {
         .select("*")
         .eq("estate_id", estate_id)
         .order("created_at", { ascending: false })
+        .throwOnError()
     ),
 };
 
@@ -172,5 +180,6 @@ export const alertAPI = {
         .select("*")
         .eq("estate_id", estate_id)
         .order("created_at", { ascending: false })
+        .throwOnError()
     ),
 };
