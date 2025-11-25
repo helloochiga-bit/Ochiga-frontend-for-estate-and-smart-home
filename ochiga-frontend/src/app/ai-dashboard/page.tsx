@@ -115,7 +115,8 @@ export default function AIDashboard() {
     setShowScrollDown(false);
   };
 
-  const handleMicClick = () => (listening ? stopListening() : startListening());
+  const handleMicClick = () =>
+    listening ? stopListening() : startListening();
 
   /* MOVE PANEL BLOCK */
   const movePanelBlockToBottom = (panelTag: string) => {
@@ -429,7 +430,7 @@ export default function AIDashboard() {
               {messages.map((msg, i) => (
                 <div
                   key={msg.id}
-                  ref={(el) => { messageRefs.current[i] = el; }} // 🔧 FIXED
+                  ref={(el) => { messageRefs.current[i] = el; }}
                   className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div className="flex flex-col max-w-[80%]">
@@ -476,7 +477,6 @@ export default function AIDashboard() {
           <ChatFooter
             input={input}
             setInput={setInput}
-            listening={listening}
             onMicClick={handleMicClick}
             onSend={() => handleSend(undefined, false)}
             onAction={handleAction}
