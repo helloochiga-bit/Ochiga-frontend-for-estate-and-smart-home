@@ -1,4 +1,15 @@
+// ochiga-frontend/src/lib/GoogleMapLoader.ts
+
 let googleMapsLoading: Promise<void> | null = null;
+
+// Extend the Window interface to include 'google'
+declare global {
+  interface Window {
+    google?: {
+      maps?: typeof google.maps;
+    };
+  }
+}
 
 export function loadGoogleMaps(apiKey: string): Promise<void> {
   if (typeof window === "undefined") return Promise.resolve();
