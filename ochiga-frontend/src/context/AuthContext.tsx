@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { apiRequest } from "../lib/api";
+import socket from "@/lib/socket";          // ✅ IMPORT SOCKET.IO CLIENT
 import { User } from "../data/types";
 
 interface RegisterManagerPayload {
@@ -40,10 +41,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
     const savedToken = localStorage.getItem("token");
+
     if (savedUser && savedToken) {
       setUser(JSON.parse(savedUser));
       setToken(savedToken);
+
+      // 🔥 reconnect socket on refresh
+      const parsedUser = JSON.parse(savedUser);
+      socket.emit("subscribe:user", parsedUser.id);
+
+      if (parsedUser.estate_id) {
+        socket.emit("subscribe:estate", parsedUser.estate_id);
+      }
     }
+
     setLoading(false);
   }, []);
 
@@ -61,6 +72,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setToken(res.token);
         localStorage.setItem("user", JSON.stringify(res.user));
         localStorage.setItem("token", res.token);
+
+        // 🔥 SOCKET.IO SUBSCRIPTIONS AFTER LOGIN
+        socket.emit("subscribe:user", res.user.id);
+
+        if (res.user.estate_id) {
+          socket.emit("subscribe:estate", res.user.estate_id);
+        }
+
         router.push("/dashboard");
       } else {
         throw new Error("Invalid response from server");
@@ -110,14 +129,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+
+    // 🔥 leave socket rooms
+    socket.emit("unsubscribe:all");
+
     setUser(null);
     setToken(null);
+
     router.push("/auth");
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, token, loading, loginUser, registerManager, inviteResident, logout }}
+      value={{
+        user,
+        token,
+        loading,
+        loginUser,
+        registerManager,
+        inviteResident,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>
