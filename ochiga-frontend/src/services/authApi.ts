@@ -1,6 +1,7 @@
 // src/services/authApi.ts
+
 const BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export async function loginApi(email: string, password: string) {
   const res = await fetch(`${BASE_URL}/auth/login`, {
@@ -14,10 +15,7 @@ export async function loginApi(email: string, password: string) {
   return res.json();
 }
 
-export async function registerResidentApi(
-  inviteToken: string,
-  password: string
-) {
+export async function registerResidentApi(inviteToken: string, password: string) {
   const res = await fetch(`${BASE_URL}/auth/register-resident`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
