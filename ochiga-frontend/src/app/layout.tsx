@@ -2,7 +2,7 @@ import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
 import { DashboardProvider } from "../context/DashboardContext";
 import { Toaster } from "sonner";
-import Script from "next/script"; // ✅ import Script
+import Script from "next/script";
 
 export const metadata = {
   title: "Ochiga Smart Estate",
@@ -17,10 +17,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Google Maps API for map/address autocomplete */}
+        {/* Google Maps API */}
         <Script
           src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
-          strategy="beforeInteractive" // ✅ ensures API is ready before components mount
+          strategy="beforeInteractive"
         />
       </head>
       <body>
