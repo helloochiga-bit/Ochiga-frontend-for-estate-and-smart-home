@@ -1,23 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getWallet, initiateTopup } from "@/lib/wallet";
 
 export default function WalletPanel() {
   const [activeTab, setActiveTab] = useState<"add" | "transactions" | null>(null);
-  const [balance, setBalance] = useState(2500);
+  const [balance, setBalance] = useState(0);
   const [amount, setAmount] = useState("");
+  const [transactions, setTransactions] = useState([]);
 
-  const transactions = [
-    { id: 1, type: "Credit", amount: 5000, date: "Nov 8" },
-    { id: 2, type: "Debit", amount: 2500, date: "Nov 9" },
-  ];
+  // Load wallet on mount
+  useEffect(() => {
+    loadWallet();
+  }, []);
 
-  const handleAddFunds = () => {
-    const amt = parseFloat(amount);
+  async function loadWallet() {
+    const data = await getWallet();
+    if (data?.balance !== undefined) {
+      setBalance(data.balance);
+    }
+  }
+
+  // Start Paystack payment
+  const handleAddFunds = async () => {
+    const amt = Number(amount);
     if (!amt || amt <= 0) return;
-    setBalance((prev) => prev + amt);
-    setAmount("");
-    setActiveTab(null);
+
+    const res = await initiateTopup(amt);
+
+    if (!res?.data?.authorization_url) {
+      alert("Unable to start payment");
+      return;
+    }
+
+    // Redirect user to Paystack
+    window.location.href = res.data.authorization_url;
   };
 
   return (
@@ -28,7 +45,7 @@ export default function WalletPanel() {
       <div className="flex justify-between mb-2">
         <span>Balance:</span>
         <span className="font-semibold text-green-400">
-          ₦ {balance.toLocaleString()}
+          ₦ {Number(balance).toLocaleString()}
         </span>
       </div>
 
@@ -73,7 +90,7 @@ export default function WalletPanel() {
             onClick={handleAddFunds}
             className="w-full bg-purple-600 hover:bg-purple-700 rounded-md py-1 text-xs font-medium text-white"
           >
-            Fund Wallet
+            Pay with Paystack
           </button>
         </div>
       )}
@@ -81,20 +98,26 @@ export default function WalletPanel() {
       {/* Transaction List */}
       {activeTab === "transactions" && (
         <div className="bg-gray-800 border border-gray-700 rounded-lg p-2 mt-2">
-          {transactions.map((tx) => (
+          {transactions.length === 0 && (
+            <p className="text-gray-400 text-xs">No transactions yet.</p>
+          )}
+
+          {transactions.map((tx: any) => (
             <div
               key={tx.id}
               className="flex justify-between text-[11px] py-1 border-b border-gray-700 last:border-none"
             >
               <span
                 className={`${
-                  tx.type === "Credit" ? "text-green-400" : "text-red-400"
+                  tx.type === "credit" ? "text-green-400" : "text-red-400"
                 }`}
               >
                 {tx.type}
               </span>
-              <span>₦ {tx.amount.toLocaleString()}</span>
-              <span className="text-gray-400">{tx.date}</span>
+              <span>₦ {Number(tx.amount).toLocaleString()}</span>
+              <span className="text-gray-400">
+                {new Date(tx.created_at).toLocaleDateString()}
+              </span>
             </div>
           ))}
         </div>
