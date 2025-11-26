@@ -1,7 +1,6 @@
 // src/lib/api.ts
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export async function apiRequest(path: string, options: RequestInit = {}) {
   const token =
@@ -24,19 +23,12 @@ export async function apiRequest(path: string, options: RequestInit = {}) {
     const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      console.error(
-        "❌ API ERROR:",
-        path,
-        response.status,
-        response.statusText,
-        data
-      );
       throw new Error(data.error || data.message || "Request failed");
     }
 
     return data;
-  } catch (err: any) {
-    console.error("❌ FETCH FAILED:", err.message);
+  } catch (err) {
+    console.error("❌ FETCH FAILED:", err);
     throw err;
   }
 }
