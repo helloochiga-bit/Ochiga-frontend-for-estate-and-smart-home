@@ -1,34 +1,23 @@
-// src/lib/api.ts
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export async function apiRequest(path: string, options: RequestInit = {}) {
-  const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("ochiga_token")
-      : null;
+  const token = localStorage.getItem("token");
 
-  const headers: any = {
+  const headers = {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...(options.headers || {}),
+    ...options.headers,
   };
 
-  try {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-      ...options,
-      headers,
-    });
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    headers,
+  });
 
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(data.error || data.message || "Request failed");
-    }
-
-    return data;
-  } catch (err) {
-    console.error("❌ FETCH FAILED:", err);
-    throw err;
+  if (!res.ok) {
+    throw new Error(`API error: ${res.status}`);
   }
+
+  return res.json();
 }
