@@ -1,4 +1,4 @@
-"use client";
+"use client"; // ensures page is 100% client component
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -17,8 +17,9 @@ export default function WalletVerifyPage() {
 
     const verifyPayment = async () => {
       try {
+        // Fetch at runtime, inside useEffect
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/wallets/paystack/verify/${reference}`,
+          `/api/wallets/paystack/verify?reference=${reference}`,
           { credentials: "include" }
         );
         const data = await res.json();
