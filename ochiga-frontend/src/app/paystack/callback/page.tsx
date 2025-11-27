@@ -1,50 +1,56 @@
-"use client";
+'use client';
 
 import { useEffect, useState } from "react";
-import { verifyPayment } from "@/lib/wallet";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { toast } from "sonner";
 
-export default function PaystackCallbackPage() {
+const PaystackCallbackContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const reference = searchParams.get("reference");
 
-  const [status, setStatus] = useState<"loading" | "success" | "failed">(
-    "loading"
-  );
+  const [status, setStatus] = useState<"loading" | "success" | "failed">("loading");
+  const [toastLoaded, setToastLoaded] = useState<any>(null);
+
+  // Dynamically import toast on client-side only
+  useEffect(() => {
+    import("sonner").then((mod) => setToastLoaded(() => mod.toast));
+  }, []);
 
   useEffect(() => {
     if (!reference) {
       setStatus("failed");
-      toast.error("Missing payment reference");
+      toastLoaded?.error("Missing payment reference");
       return;
     }
 
-    verifyPaymentStatus();
-  }, [reference]);
+    const verifyPaymentStatus = async () => {
+      try {
+        const { verifyPayment } = await import("@/lib/wallet"); // dynamic import at runtime
+        const res = await verifyPayment(reference!);
 
-  async function verifyPaymentStatus() {
-    try {
-      const res = await verifyPayment(reference!);
+        if (res?.success) {
+          setStatus("success");
+          toastLoaded?.success("Wallet funded successfully! 🎉");
 
-      if (res?.success) {
-        setStatus("success");
-        toast.success("Wallet funded successfully! 🎉");
-
-        setTimeout(() => {
-          router.push("/ai-dashboard");
-        }, 1500);
-      } else {
+          setTimeout(() => {
+            router.push("/ai-dashboard");
+          }, 1500);
+        } else {
+          setStatus("failed");
+          toastLoaded?.error(res?.message || "Payment verification failed");
+        }
+      } catch (err) {
+        console.error(err);
         setStatus("failed");
-        toast.error(res?.message || "Payment verification failed");
+        toastLoaded?.error("Server error verifying payment.");
       }
-    } catch (err) {
-      console.error(err);
-      setStatus("failed");
-      toast.error("Server error verifying payment.");
+    };
+
+    if (toastLoaded) {
+      verifyPaymentStatus();
     }
-  }
+  }, [reference, toastLoaded, router]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0c0c0d] text-white p-6">
@@ -62,12 +68,8 @@ export default function PaystackCallbackPage() {
           <div className="w-14 h-14 flex items-center justify-center bg-green-600 rounded-full animate-scaleIn">
             <span className="text-xl">✓</span>
           </div>
-          <p className="mt-4 text-green-400 font-semibold">
-            Payment Successful!
-          </p>
-          <p className="text-gray-400 text-xs">
-            Redirecting to your dashboard...
-          </p>
+          <p className="mt-4 text-green-400 font-semibold">Payment Successful!</p>
+          <p className="text-gray-400 text-xs">Redirecting to your dashboard...</p>
         </div>
       )}
 
@@ -88,4 +90,7 @@ export default function PaystackCallbackPage() {
       )}
     </div>
   );
-}
+};
+
+// Wrap in dynamic import to ensure no SSR
+export default dynamic(() => Promise.resolve(PaystackCallbackContent), { ssr: false });
