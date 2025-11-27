@@ -18,7 +18,6 @@ export default function VerifyPageClient() {
           `${process.env.NEXT_PUBLIC_API_URL}/wallets/paystack/verify/${reference}`,
           { credentials: "include" }
         );
-
         const data = await res.json();
 
         if (data.error) setStatus("Payment Failed ❌");
