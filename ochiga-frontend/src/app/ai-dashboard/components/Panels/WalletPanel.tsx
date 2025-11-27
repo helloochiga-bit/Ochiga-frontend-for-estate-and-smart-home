@@ -1,39 +1,63 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getWallet, initiateTopup } from "@/lib/wallet";
+import { getWallet, getTransactions, initiateTopup } from "@/lib/wallet";
+import { toast } from "sonner";
 
 export default function WalletPanel() {
   const [activeTab, setActiveTab] = useState<"add" | "transactions" | null>(null);
   const [balance, setBalance] = useState(0);
   const [amount, setAmount] = useState("");
-  const [transactions, setTransactions] = useState([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Load wallet on mount
   useEffect(() => {
     loadWallet();
+    loadTransactions();
   }, []);
 
+  // Load wallet balance
   async function loadWallet() {
-    const data = await getWallet();
-    if (data?.balance !== undefined) {
-      setBalance(data.balance);
+    try {
+      const data = await getWallet();
+      if (data?.balance !== undefined) {
+        setBalance(data.balance);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // Load transaction history
+  async function loadTransactions() {
+    try {
+      const tx = await getTransactions();
+      if (Array.isArray(tx)) setTransactions(tx);
+    } catch (err) {
+      console.error(err);
     }
   }
 
   // Start Paystack payment
   const handleAddFunds = async () => {
     const amt = Number(amount);
-    if (!amt || amt <= 0) return;
-
-    const res = await initiateTopup(amt);
-
-    if (!res?.data?.authorization_url) {
-      alert("Unable to start payment");
+    if (!amt || amt <= 0) {
+      toast.error("Enter a valid amount");
       return;
     }
 
-    // Redirect user to Paystack
+    setLoading(true);
+
+    const res = await initiateTopup(amt);
+
+    setLoading(false);
+
+    if (!res?.data?.authorization_url) {
+      toast.error("Unable to start payment");
+      return;
+    }
+
+    // Redirect user to Paystack Checkout
     window.location.href = res.data.authorization_url;
   };
 
@@ -88,16 +112,17 @@ export default function WalletPanel() {
           />
           <button
             onClick={handleAddFunds}
-            className="w-full bg-purple-600 hover:bg-purple-700 rounded-md py-1 text-xs font-medium text-white"
+            disabled={loading}
+            className="w-full bg-purple-600 hover:bg-purple-700 rounded-md py-1 text-xs font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Pay with Paystack
+            {loading ? "Processing..." : "Pay with Paystack"}
           </button>
         </div>
       )}
 
       {/* Transaction List */}
       {activeTab === "transactions" && (
-        <div className="bg-gray-800 border border-gray-700 rounded-lg p-2 mt-2">
+        <div className="bg-gray-800 border border-gray-700 rounded-lg p-2 mt-2 max-h-52 overflow-y-auto">
           {transactions.length === 0 && (
             <p className="text-gray-400 text-xs">No transactions yet.</p>
           )}
