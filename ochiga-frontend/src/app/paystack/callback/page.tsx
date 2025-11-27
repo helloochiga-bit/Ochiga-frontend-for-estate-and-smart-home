@@ -7,82 +7,85 @@ import { toast } from "sonner";
 
 export default function PaystackCallbackPage() {
   const router = useRouter();
-  const params = useSearchParams();
+  const searchParams = useSearchParams();
+  const reference = searchParams.get("reference");
 
-  const [status, setStatus] = useState<"loading" | "success" | "error">(
+  const [status, setStatus] = useState<"loading" | "success" | "failed">(
     "loading"
   );
 
   useEffect(() => {
-    const reference = params.get("reference");
-
     if (!reference) {
-      setStatus("error");
-      toast.error("Invalid payment reference");
+      setStatus("failed");
+      toast.error("Missing payment reference");
       return;
     }
 
-    // Verify payment with backend
-    async function verify() {
-      try {
-        const res = await verifyPayment(reference);
+    verifyPaymentStatus();
+  }, [reference]);
 
-        if (res?.status === "success") {
-          setStatus("success");
-          toast.success("Payment successful! Wallet updated.");
+  async function verifyPaymentStatus() {
+    try {
+      const res = await verifyPayment(reference!);
 
-          // redirect after 2 seconds
-          setTimeout(() => {
-            router.push("/ai-dashboard");
-          }, 2000);
-        } else {
-          setStatus("error");
-          toast.error(res?.error || "Payment verification failed");
-        }
-      } catch (err) {
-        console.error(err);
-        setStatus("error");
-        toast.error("Unable to verify payment");
+      if (res?.success) {
+        setStatus("success");
+        toast.success("Wallet funded successfully! 🎉");
+
+        setTimeout(() => {
+          router.push("/ai-dashboard");
+        }, 1500);
+      } else {
+        setStatus("failed");
+        toast.error(res?.message || "Payment verification failed");
       }
+    } catch (err) {
+      console.error(err);
+      setStatus("failed");
+      toast.error("Server error verifying payment.");
     }
-
-    verify();
-  }, [params, router]);
+  }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-950 text-white">
-      <div className="bg-gray-900 p-6 rounded-xl border border-gray-700 text-center w-[300px]">
-        {status === "loading" && (
-          <>
-            <p className="text-purple-400 font-semibold mb-2">
-              Verifying Payment...
-            </p>
-            <p className="text-xs text-gray-400">
-              Please wait while we update your wallet.
-            </p>
-          </>
-        )}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0c0c0d] text-white p-6">
+      {/* Loading State */}
+      {status === "loading" && (
+        <div className="flex flex-col items-center animate-fadeIn">
+          <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="mt-4 text-gray-300 text-sm">Verifying payment...</p>
+        </div>
+      )}
 
-        {status === "success" && (
-          <>
-            <p className="text-green-400 font-semibold mb-2">
-              Payment Successful 🎉
-            </p>
-            <p className="text-xs text-gray-400">Redirecting...</p>
-          </>
-        )}
+      {/* Success State */}
+      {status === "success" && (
+        <div className="flex flex-col items-center animate-fadeIn">
+          <div className="w-14 h-14 flex items-center justify-center bg-green-600 rounded-full animate-scaleIn">
+            <span className="text-xl">✓</span>
+          </div>
+          <p className="mt-4 text-green-400 font-semibold">
+            Payment Successful!
+          </p>
+          <p className="text-gray-400 text-xs">
+            Redirecting to your dashboard...
+          </p>
+        </div>
+      )}
 
-        {status === "error" && (
-          <>
-            <p className="text-red-400 font-semibold mb-2">
-              Verification Failed ❌
-            </p>
-            <p className="text-xs text-gray-400">
-              Something went wrong. Try again.
-            </p>
-          </>
-        )}
-      </div>
+      {/* Failed State */}
+      {status === "failed" && (
+        <div className="flex flex-col items-center animate-fadeIn">
+          <div className="w-14 h-14 flex items-center justify-center bg-red-600 rounded-full animate-scaleIn">
+            <span className="text-xl">✕</span>
+          </div>
+          <p className="mt-4 text-red-400 font-semibold">Payment Failed</p>
+          <button
+            onClick={() => router.push("/ai-dashboard")}
+            className="mt-3 px-4 py-1 text-xs bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-lg"
+          >
+            Go Back
+          </button>
+        </div>
+      )}
     </div>
   );
 }
