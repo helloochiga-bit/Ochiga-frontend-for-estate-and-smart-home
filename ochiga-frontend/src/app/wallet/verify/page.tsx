@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-export default function VerifyPage() {
+export default function VerifyPageClient() {
   const params = useSearchParams();
   const reference = params.get("reference");
 
@@ -12,20 +12,28 @@ export default function VerifyPage() {
   useEffect(() => {
     if (!reference) return;
 
-    fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/wallets/paystack/verify/${reference}`,
-      { credentials: "include" }
-    )
-      .then((r) => r.json())
-      .then((res) => {
-        if (res.error) setStatus("Payment Failed ❌");
+    const verifyPayment = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/wallets/paystack/verify/${reference}`,
+          { credentials: "include" }
+        );
+
+        const data = await res.json();
+
+        if (data.error) setStatus("Payment Failed ❌");
         else setStatus("Wallet Funded Successfully ✔");
-      })
-      .catch(() => setStatus("Verification Error ❌"));
+      } catch (err) {
+        console.error(err);
+        setStatus("Verification Error ❌");
+      }
+    };
+
+    verifyPayment();
   }, [reference]);
 
   return (
-    <div className="p-6 text-white">
+    <div className="flex flex-col items-center justify-center min-h-screen p-6 text-white bg-[#0c0c0d]">
       <h1 className="text-xl">{status}</h1>
     </div>
   );
