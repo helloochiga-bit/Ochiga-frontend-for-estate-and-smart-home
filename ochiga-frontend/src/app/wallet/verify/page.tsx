@@ -17,9 +17,12 @@ export default function WalletVerifyPage() {
 
     const verifyPayment = async () => {
       try {
-        // Use relative API route to avoid build-time fetch
-        const apiUrl = `/api/wallets/paystack/verify?reference=${reference}`;
-        const res = await fetch(apiUrl, { credentials: "include" });
+        // Use a relative API route — prevents build-time fetch
+        const res = await fetch(
+          `/api/wallets/paystack/verify?reference=${reference}`,
+          { credentials: "include" }
+        );
+
         const data = await res.json();
 
         if (data.error) setStatus("Payment Failed ❌");
