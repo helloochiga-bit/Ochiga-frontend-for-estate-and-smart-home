@@ -1,76 +1,72 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { Suspense, useEffect, useState } from "react";
-import LoaderCircle from "../components/ui/LoaderCircle";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { authService } from "@/services/index";
+import { getUser } from "@/lib/auth";
 
-const QrScanner = dynamic(() => import("../components/QrScanner"), { ssr: false });
-
-function OnboardTokenHandler() {
-  const { useRouter, useSearchParams } = require("next/navigation");
+export default function OnboardingPage() {
   const router = useRouter();
-  const params = useSearchParams();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const tokenParam = params?.get("token") ?? null;
-  const [verifying, setVerifying] = useState(false);
+  const currentUser = getUser();
 
-  const verifyTokenAndProceed = async (token: string | null) => {
-    if (!token) return;
-    setVerifying(true);
-    await new Promise((r) => setTimeout(r, 800));
-
-    const invites = JSON.parse(localStorage.getItem("ochiga_invites") || "[]");
-    const found = invites.find(
-      (i: any) => i.token === token && i.type === "homeInvite" && !i.used
-    );
-
-    if (!found) {
-      alert("Invalid or expired invite token.");
-      setVerifying(false);
+  const handleComplete = async () => {
+    if (!username || !password) {
+      setError("All fields required");
+      return;
+    }
+    if (!currentUser?.id) {
+      setError("No user info found. Please login again.");
       return;
     }
 
-    found.used = true;
-    localStorage.setItem("ochiga_invites", JSON.stringify(invites));
+    setLoading(true);
+    setError("");
 
-    setTimeout(() => router.push(`/auth/resident-complete?token=${token}`), 700);
+    try {
+      await authService.completeOnboarding(currentUser.id, username, password);
+      // On success, redirect to dashboard
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err?.message || "Onboarding failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => {
-    if (tokenParam) verifyTokenAndProceed(tokenParam);
-  }, [tokenParam]);
-
   return (
-    <>
-      {!tokenParam && (
-        <p className="text-sm text-gray-400 text-center mb-4">
-          Point your device camera at the QR sent to your email.
-        </p>
-      )}
-      <div className="bg-gray-900 p-4 rounded border border-gray-800">
-        <QrScanner onScan={(data) => { if (data) verifyTokenAndProceed(data); }} />
-      </div>
-      {verifying && (
-        <div className="flex flex-col items-center mt-6 text-center">
-          <LoaderCircle />
-          <p className="text-sm text-gray-400 mt-2">Verifying invite...</p>
-        </div>
-      )}
-    </>
-  );
-}
+    <div className="fixed inset-0 bg-black flex items-center justify-center px-6 overflow-auto">
+      <div className="w-full max-w-md bg-[#111] border border-gray-800 rounded-2xl p-8">
+        <h2 className="text-white text-xl mb-4">Complete your account</h2>
 
-export default function OnboardPage() {
-  return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center">
-      <div className="w-full max-w-xl p-4">
-        <h2 className="text-lg font-semibold mb-3 text-center">
-          Scan QR to complete onboarding
-        </h2>
-        {/* Suspense wrapper required by Next.js 15 */}
-        <Suspense fallback={<LoaderCircle />}>
-          <OnboardTokenHandler />
-        </Suspense>
+        {error && <p className="text-red-400 mb-3">{error}</p>}
+
+        <input
+          className="w-full mb-3 p-3 rounded bg-black border border-gray-700 text-white"
+          placeholder="Choose a username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+
+        <input
+          className="w-full mb-3 p-3 rounded bg-black border border-gray-700 text-white"
+          placeholder="Choose a password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <button
+          onClick={handleComplete}
+          className="w-full py-3 rounded-xl bg-[#E30613] text-white font-semibold"
+          disabled={loading}
+        >
+          {loading ? "Processing..." : "Complete setup"}
+        </button>
       </div>
     </div>
   );
