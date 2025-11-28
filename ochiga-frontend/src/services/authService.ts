@@ -1,70 +1,53 @@
 // src/services/authService.ts
-import { apiRequest } from "@/lib/api";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+import { loginApi, signupApi, onboardingCompleteApi } from "./authApi";
+import { saveAuth, clearAuth, getToken as _getToken } from "@/lib/auth";
 
 export const authService = {
-  // -----------------------------
-  // Signup / Register
-  // -----------------------------
-  async signup(payload: {
-    email: string;
-    username: string;
-    password: string;
-    role?: string;
-    estateId?: string;
-  }) {
-    const res = await fetch(`${BACKEND_URL}/auth/signup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+  async login(usernameOrEmail: string, password: string) {
+    const data = await loginApi(usernameOrEmail, password);
+    // backend returns { user, token }
+    const token = data.token ?? null;
+    const user = data.user ?? null;
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || data.message || "Signup failed");
+    // save locally for client-side needs + set role cookie
+    saveAuth(token, user);
 
-    // Save token
-    localStorage.setItem("ochiga_token", data.token);
-    localStorage.setItem("ochiga_role", payload.role || "resident");
-
-    return data; // returns { user, token }
+    return { user, token };
   },
 
-  // -----------------------------
-  // Login
-  // -----------------------------
-  async login(payload: { usernameOrEmail: string; password: string }) {
-    const res = await fetch(`${BACKEND_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || data.message || "Login failed");
-
-    // Save token
-    localStorage.setItem("ochiga_token", data.token);
-    localStorage.setItem("ochiga_role", data.user.role || "resident");
-
-    return data; // returns { user, token }
+  async signup(payload: { email: string; password: string; full_name?: string }) {
+    const data = await signupApi(payload);
+    const token = data.token ?? null;
+    const user = data.user ?? null;
+    saveAuth(token, user);
+    return { user, token };
   },
 
-  // -----------------------------
-  // Logout
-  // -----------------------------
+  async completeOnboarding(user_id: string, username: string, password: string) {
+    const data = await onboardingCompleteApi(user_id, username, password);
+    // backend returns updated user
+    const token = localStorage.getItem("ochiga_token") || null;
+    const user = data.user ?? null;
+    // Refresh stored user
+    saveAuth(token, user);
+    return data;
+  },
+
   logout() {
-    localStorage.removeItem("ochiga_token");
-    localStorage.removeItem("ochiga_role");
+    // If backend has /auth/logout endpoint, you can call it here (optional)
+    clearAuth();
   },
 
-  // -----------------------------
-  // Get current token & role
-  // -----------------------------
   getToken() {
-    return localStorage.getItem("ochiga_token");
+    return _getToken();
   },
-  getRole() {
-    return localStorage.getItem("ochiga_role");
+
+  getUser() {
+    try {
+      const raw = localStorage.getItem("ochiga_user");
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
   },
 };
