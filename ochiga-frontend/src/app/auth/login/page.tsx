@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { IoChevronBack } from "react-icons/io5";
 import { FaGoogle, FaApple } from "react-icons/fa";
+import { authService } from "@/services/index";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,8 +12,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
 
   const handleLogin = async () => {
     if (!usernameOrEmail || !password) {
@@ -24,31 +23,24 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const res = await fetch(`${BACKEND_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usernameOrEmail, password }),
-      });
+      const { user } = await authService.login(usernameOrEmail, password);
 
-      const data = await res.json();
+      if (!user) throw new Error("Login failed: no user returned");
 
-      if (!res.ok) throw new Error(data.error || "Login failed");
+      // if onboarding not complete, send to onboarding
+      if (!user.onboarding_complete) {
+        router.push("/auth/onboarding");
+        return;
+      }
 
-      if (data.token) {
-        // Save JWT to localStorage for device discovery / API calls
-        localStorage.setItem("ochiga_token", data.token);
-
-        // Redirect based on role
-        if (data.user.role === "estate") {
-          router.push("/estate-dashboard");
-        } else {
-          router.push("/ai-dashboard");
-        }
+      // route by role
+      if (user.role === "estate" || user.role === "manager") {
+        router.push("/manager-dashboard");
       } else {
-        throw new Error("Login failed: token missing");
+        router.push("/dashboard");
       }
     } catch (err: any) {
-      setError(err.message || "Login failed");
+      setError(err?.message || "Login failed");
     } finally {
       setLoading(false);
     }
