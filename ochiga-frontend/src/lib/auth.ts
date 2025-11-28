@@ -1,27 +1,22 @@
-// src/lib/auth.ts
-"use client";
+export function saveAuth(token: string, user: any) {
+  localStorage.setItem("token", token);
+  localStorage.setItem("user", JSON.stringify(user));
 
-import Cookies from "js-cookie";
-
-export function saveToken(token: string, role: "resident" | "manager") {
-  // ✅ HttpOnly cookies would be best from backend
-  Cookies.set("token", token, { expires: 1, sameSite: "strict" });
-  Cookies.set("role", role, { expires: 1, sameSite: "strict" });
-
-  // ✅ localStorage for quick client access
-  localStorage.setItem("ochiga_role", role);
+  // Set role cookie for middleware
+  document.cookie = `role=${user.role}; path=/;`;
 }
 
-export function getToken(): string | null {
-  return Cookies.get("token") || null;
+export function getToken() {
+  return localStorage.getItem("token");
 }
 
-export function getRole(): string | null {
-  return Cookies.get("role") || localStorage.getItem("ochiga_role");
+export function getUser() {
+  const u = localStorage.getItem("user");
+  return u ? JSON.parse(u) : null;
 }
 
-export function clearToken() {
-  Cookies.remove("token");
-  Cookies.remove("role");
-  localStorage.removeItem("ochiga_role");
+export function logout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  document.cookie = "role=; Max-Age=0; path=/;";
 }
