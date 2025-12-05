@@ -5,13 +5,9 @@ import { saveAuth, clearAuth, getToken as _getToken } from "@/lib/auth";
 export const authService = {
   async login(usernameOrEmail: string, password: string) {
     const data = await loginApi(usernameOrEmail, password);
-    // backend returns { user, token }
     const token = data.token ?? null;
     const user = data.user ?? null;
-
-    // save locally for client-side needs + set role cookie
     saveAuth(token, user);
-
     return { user, token };
   },
 
@@ -25,17 +21,15 @@ export const authService = {
 
   async completeOnboarding(user_id: string, username: string, password: string) {
     const data = await onboardingCompleteApi(user_id, username, password);
-    // backend returns updated user
     const token = localStorage.getItem("ochiga_token") || null;
     const user = data.user ?? null;
-    // Refresh stored user
     saveAuth(token, user);
     return data;
   },
 
-  logout() {
-    // If backend has /auth/logout endpoint, you can call it here (optional)
+  async logout() {             // <-- FIXED
     clearAuth();
+    return true;               // ensures Promise<any>
   },
 
   getToken() {
@@ -46,7 +40,7 @@ export const authService = {
     try {
       const raw = localStorage.getItem("ochiga_user");
       return raw ? JSON.parse(raw) : null;
-    } catch (e) {
+    } catch {
       return null;
     }
   },
