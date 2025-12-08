@@ -1,7 +1,5 @@
 "use client";
 
-"use client";
-
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
